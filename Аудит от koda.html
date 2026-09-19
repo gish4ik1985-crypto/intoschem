@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Аудит проекта Into Schem — 2026-09-03</title>
+<style>
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0a0e14; color: #c8d6e5; max-width: 960px; margin: 40px auto; padding: 0 24px; line-height: 1.6; }
+  h1 { color: #feca57; border-bottom: 2px solid #feca57; padding-bottom: 8px; }
+  h2 { color: #48dbfb; margin-top: 36px; }
+  h3 { color: #ff6b6b; margin-top: 24px; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  th, td { border: 1px solid #2d3436; padding: 10px 14px; text-align: left; }
+  th { background: #1a1a2e; color: #feca57; }
+  td.score { text-align: center; font-weight: bold; font-size: 1.2em; }
+  .score-high { color: #00d2d3; }
+  .score-mid { color: #feca57; }
+  .score-low { color: #ff6b6b; }
+  .score-new { color: #48dbfb; }
+  .verdict { background: #1a1a2e; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #feca57; }
+  .verdict .big { font-size: 2.4em; color: #feca57; font-weight: bold; }
+  .fix { background: #1e3a2f; padding: 12px 16px; border-radius: 6px; margin: 8px 0; border-left: 3px solid #00d2d3; }
+  .fix::before { content: '✓ Исправлено: '; color: #00d2d3; font-weight: bold; }
+  .todo { background: #3a1e1e; padding: 12px 16px; border-radius: 6px; margin: 8px 0; border-left: 3px solid #ff6b6b; }
+  .todo::before { content: '⚠ Осталось: '; color: #ff6b6b; font-weight: bold; }
+  ul { padding-left: 20px; }
+  li { margin: 4px 0; }
+  code { background: #1a1a2e; padding: 2px 6px; border-radius: 3px; font-family: 'Consolas', monospace; }
+  .section { margin: 24px 0; }
+</style>
+</head>
+<body>
+
+<h1>Аудит проекта «Into Schem»</h1>
+<p><b>Дата:</b> 3 сентября 2026 &nbsp;|&nbsp; <b>Версия:</b> rev.0.1 (web) &nbsp;|&nbsp; <b>Режим:</b> полный аудит после добавления звуковой системы</p>
+
+<div class="verdict">
+  <div>Общий вердикт:</div>
+  <div class="big">8.5 / 10</div>
+  <div style="margin-top: 8px; color: #888;">↑ с 8.0 за добавление процедурного звука и исправление направления тока</div>
+</div>
+
+<h2>📊 Оценки по категориям</h2>
+
+<table>
+  <tr>
+    <th>Категория</th>
+    <th>Прошлое</th>
+    <th>Новое</th>
+    <th>Комментарий</th>
+  </tr>
+  <tr>
+    <td><b>Архитектура</b></td>
+    <td class="score score-high">9.0</td>
+    <td class="score score-high">9.0</td>
+    <td>Две ветки идентичны, чистое разделение ответственности</td>
+  </tr>
+  <tr>
+    <td><b>Физическое ядро</b></td>
+    <td class="score score-high">9.5</td>
+    <td class="score score-high">9.5</td>
+    <td>MNA + LU-кэш + Ньютона-Рафсон — эталон</td>
+  </tr>
+  <tr>
+    <td><b>Визуал</b></td>
+    <td class="score score-mid">7.0</td>
+    <td class="score score-mid">7.5</td>
+    <td>Исправлено направление тока (огоньки теперь бегут от + к −)</td>
+  </tr>
+  <tr>
+    <td><b>Звук</b></td>
+    <td class="score score-low">3.0</td>
+    <td class="score score-new">7.5</td>
+    <td>Процедурный звук: 15 эффектов, мотор с LFO, реле, сгорание, победа</td>
+  </tr>
+  <tr>
+    <td><b>Контент</b></td>
+    <td class="score score-mid">8.0</td>
+    <td class="score score-mid">8.0</td>
+    <td>77 уровней, 9 секторов, принцип «один уровень — один закон»</td>
+  </tr>
+  <tr>
+    <td><b>Тесты</b></td>
+    <td class="score score-high">9.0</td>
+    <td class="score score-high">9.0</td>
+    <td>710+ проверок: солвер, разводка, проходимость, кодекс</td>
+  </tr>
+  <tr>
+    <td><b>UX / Интерфейс</b></td>
+    <td class="score score-mid">7.5</td>
+    <td class="score score-mid">8.0</td>
+    <td>Кнопка 🔊/🔇, звук на всех кнопках, сохранение громкости</td>
+  </tr>
+</table>
+
+<h2>✅ Что исправлено в этой сессии</h2>
+
+<div class="fix">Направление бегущего заряда на проводах</div>
+<p>Раньше огоньки бежали «от минуса к плюсу» на обратных проводах. Причина: <code>reverse</code> вычислялся по знаку тока детали, но ток источника считается в обратную сторону. Теперь направление определяется через <code>isSupply</code> + <code>net === 'GND'</code> — огоньки всегда бегут от высокого потенциала к низкому.</p>
+
+<div class="fix">Звук мотора не остаётся на карте</div>
+<p>При выходе из уровня <code>unmount()</code> не останавливал звуки моторов. Теперь <code>unmount()</code> проходит по <code>motorNodes</code> и вызывает <code>.stop()</code> для каждого мотора. Также очищается <code>relayStates</code>.</p>
+
+<div class="fix">Громкость не скачет при переходах</div>
+<p><code>syncState()</code> вызывался при каждом клике и сбрасывал громкость. Убран вызов из <code>initOnInteraction</code>, синхронизация происходит один раз при загрузке страницы. <code>GameConfig.soundVolume</code> читается только при создании <code>AudioContext</code>.</p>
+
+<div class="fix">Звук сохраняется в прогресс</div>
+<p><code>GameConfig</code> теперь хранит <code>soundEnabled</code> и <code>soundVolume</code>. Состояние звука сохраняется в localStorage и восстанавливается при перезагрузке.</p>
+
+<h2>🎵 Звуковая система — обзор</h2>
+
+<p>Модуль <code>web/js/engine/audio.js</code> — 15 процедурных звуков через Web Audio API. Нулевой размер сборки.</p>
+
+<table>
+  <tr><th>Звук</th><th>Когда звучит</th><th>Техника</th></tr>
+  <tr><td><code>click</code></td><td>Переключатель, клик по детали, кнопка HUD, picker</td><td>Тон 800 Гц + шум highpass</td></tr>
+  <tr><td><code>relayClick</code></td><td>Реле щёлкнуло (переключение якоря)</td><td>Sawtooth 180 Гц + bandpass + тон 400 Гц</td></tr>
+  <tr><td><code>motorHum(freq)</code></td><td>Мотор крутится (частота зависит от RPM)</td><td>Sawtooth + sine гармоника + LFO модуляция</td></tr>
+  <tr><td><code>buttonPress</code></td><td>Кнопка «нажать и держать»</td><td>Короткий square 600 Гц</td></tr>
+  <tr><td><code>knobTurn</code></td><td>Ручка потенциометра</td><td>Короткий шум highpass</td></tr>
+  <tr><td><code>fuseBlow</code></td><td>Предохранитель сгорел по току</td><td>Bandpass noise + sawtooth 120 Гц</td></tr>
+  <tr><td><code>burn</code></td><td>Резистивная деталь сгорела</td><td>Bandpass noise + sawtooth 80 Гц + повтор</td></tr>
+  <tr><td><code>win</code></td><td>Уровень пройден</td><td>Аккорд C-E-G (523, 659, 784 Гц)</td></tr>
+  <tr><td><code>error</code></td><td>Ошибка / предупреждение</td><td>Два square-тона (200 → 150 Гц)</td></tr>
+  <tr><td><code>liveWire</code></td><td>Ток в проводе (очень тихий фон)</td><td>Sine 50+I×100 Гц, громкость ∝ току</td></tr>
+  <tr><td><code>capCharge</code></td><td>Заряд конденсатора</td><td>Нарастающий писк 200→800 Гц</td></tr>
+  <tr><td><code>flash</code></td><td>Вспышка</td><td>Highpass noise + sine 100 Гц</td></tr>
+  <tr><td><code>boardHumOn/Off</code></td><td>Фоновый гул 50 Гц сети</td><td>Sine 50 Гц, очень тихо</td></tr>
+</table>
+
+<h2>⚠ Что осталось улучшить</h2>
+
+<div class="todo">Звук реле не всегда срабатывает</div>
+<p>Проверка <code>P.RLY.closedNow</code> работает для уровня 11, но не для уровня 12 (маячок), где реле управляется через <code>refs.RELAY.update()</code> и поле <code>closedNow</code> может не устанавливаться. Нужно добавить универсальный триггер в <code>devices.js</code>.</p>
+
+<div class="todo">Нет ползунка громкости</div>
+<p>Есть только вкл/выкл. Для настроек можно добавить слайдер в <code>settings_panel.gd</code> или в оверлей паузы.</p>
+
+<div class="todo">Сектор «Возврат» перегружен</div>
+<p>15 уровней в секторе — много похожих по механике. Рекомендуется сжатие до 10–12 уровней с объединением похожих задач.</p>
+
+<div class="todo">Нет «вскрытия аварии»</div>
+<p>Когда деталь сгорает, игрок не видит, что именно произошло. Можно добавить анимацию «реплея» — показать последние 2 секунды до сгорания с подсветкой перегруженного элемента.</p>
+
+<div class="todo">Godot-ветка заморожена</div>
+<p><code>core/</code> и <code>exe/</code> — rev.0.1, три уровня. Рекомендуется либо мерж в <code>web/</code>, либо явное разделение веток в <code>.gitignore</code>.</p>
+
+<h2>💡 Идеи для повышения вовлечённости</h2>
+
+<ol>
+  <li><b>Система достижений</b> — «Первый мотор», «Без сгоревших деталей», «Все уровни за один проход». Не влияет на геймплей, но даёт ощущение прогресса.</li>
+  <li><b>Режим «лаборатория»</b> — свободная плата без задач, где можно экспериментировать с компонентами. Уже есть <code>freeform</code>-уровни, но общий режим лаборатории привлёк бы более технически ориентированных игроков.</li>
+  <li><b>Подсказки с анимацией</b> — вместо текстовой подсказки показать короткую анимацию правильной схемы (как GIF, но на canvas).</li>
+  <li><b>Сравнение с реальными приборами</b> — фото реальных гирлянд, щитков, датчиков рядом с их схематичными версиями в игре.</li>
+  <li><b>Звуковые достижения</b> — когда игрок соберёт цепь с мотором, услышит его жужжание. С реле — щелчок. Это создаёт эмоциональную связь.</li>
+  <li><b>Мультиплеер-режим «найди ошибку»</b> — два игрока, одна схема, один нашёл неисправность быстрее.</li>
+</ol>
+
+<h2>📐 Структура проекта</h2>
+
+<pre>
+web/
+├── js/
+│   ├── engine/
+│   │   ├── audio.js        ← НОВЫЙ: процедурный звук
+│   │   ├── circuit.js      ← Решатель MNA
+│   │   ├── draw.js         ← Отрисовка (исправлено направление тока)
+│   │   ├── hud.js          ← Интерфейс (звук на кнопках)
+│   │   ├── level.js        ← Каркас уровня (исправлен unmount)
+│   │   ├── parts.js        ← Модели компонентов
+│   │   ├── rig.js          ← Генератор плат
+│   │   └── devices.js      ← Приборы (реле, источники)
+│   ├── scenes/
+│   │   ├── menu.js         ← Главное меню
+│   │   ├── map.js          ← Карта платы (звук клика)
+│   │   ├── journal.js      ← Журнал изделия
+│   │   └── codex.js        ← Кодекс
+│   ├── levels/             ← 77 уровней
+│   ├── state.js            ← Сохранение (звук сохранён)
+│   └── main.js             ← Роутер сцен
+├── tests/                  ← 710+ проверок
+└── index.html
+</pre>
+
+<h2>🎯 Итог</h2>
+
+<p>Проект «Into Schem» — это <b>образовательный симулятор электричества</b>, доведённый до высокого уровня качества. Физическое ядро (MNA с LU-кэшированием) работает точно и быстро. 77 уровней покрывают все базовые концепции: от закона Ома до транзисторов и логики.</p>
+
+<p>Добавление процедурного звука значительно улучшает immersion — игрок теперь <b>слышит</b> мотор, реле, сгорание детали. Направление бегущего заряда исправлено: огоньки бегут от плюса к минусу, как и должно быть.</p>
+
+<p>Главные точки роста: сжатие сектора «Возврат», добавление «вскрытия аварии» и ползунка громкости. После этого проект готов к релизу.</p>
+
+</body>
+</html>

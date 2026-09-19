@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Into Schem</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="stage-outer">
+  <div id="stage">
+    <canvas id="world" width="1600" height="900"></canvas>
+    <div id="ui-layer"></div>
+  </div>
+</div>
+
+<!-- Движок: числа, цвет, отрисовка, детали, каркас уровня -->
+<script src="js/engine/util.js"></script>
+<script src="js/engine/palette.js"></script>
+<script src="js/engine/draw.js"></script>
+<script src="js/engine/board.js"></script>
+<script src="js/engine/parts.js"></script>
+<script src="js/circuit.js"></script>
+<script src="js/engine/devices.js"></script>
+<script src="js/engine/audio.js"></script>
+<script src="js/engine/touch.js"></script>
+<script src="js/engine/hud.js"></script>
+<script src="js/engine/rig.js"></script>
+<script src="js/engine/blocks.js"></script>
+<script src="js/engine/level.js"></script>
+
+<!-- Состояние и сцены -->
+<script src="js/state.js"></script>
+<script src="js/scenes/journal.js"></script>
+<script src="js/scenes/codex.js"></script>
+<script src="js/scenes/menu.js"></script>
+<script src="js/scenes/map.js"></script>
+
+<!-- Уровни: порядок объявления = порядок прохождения -->
+<script src="js/levels/_kit.js"></script>
+<script src="js/levels/_deck.js"></script>
+<script src="js/levels/l00a_t_loop.js"></script>
+<script src="js/levels/l00b_t_switch.js"></script>
+<script src="js/levels/l00c_t_ground.js"></script>
+<script src="js/levels/l00d_t_resist.js"></script>
+<script src="js/levels/l00e_t_ohm.js"></script>
+<script src="js/levels/l00f_t_series.js"></script>
+<script src="js/levels/l00g_t_parallel.js"></script>
+<script src="js/levels/l00h_t_divider.js"></script>
+<script src="js/levels/l00i_t_short.js"></script>
+<script src="js/levels/l00j_t_power.js"></script>
+<script src="js/levels/l00k_t_diode.js"></script>
+<script src="js/levels/l00l_t_led.js"></script>
+<script src="js/levels/l00m_t_bus.js"></script>
+<script src="js/levels/l00n_t_check.js"></script>
+<script src="js/levels/l01_led.js"></script>
+<script src="js/levels/l02_lamp.js"></script>
+<script src="js/levels/l03_panel.js"></script>
+<script src="js/levels/l04_garland.js"></script>
+<script src="js/levels/l05_fuse.js"></script>
+<script src="js/levels/l06_divider.js"></script>
+<script src="js/levels/l07_heater.js"></script>
+<script src="js/levels/l08_motor.js"></script>
+<script src="js/levels/l09_switchboard.js"></script>
+<script src="js/levels/l10_flash.js"></script>
+<script src="js/levels/l11_relay.js"></script>
+<script src="js/levels/l12_beacon.js"></script>
+<script src="js/levels/l13_sensor.js"></script>
+<script src="js/levels/l14_fork.js"></script>
+<script src="js/levels/l15_saturation.js"></script>
+<script src="js/levels/l16_sag.js"></script>
+<script src="js/levels/l17_workbench.js"></script>
+<script src="js/levels/l18_b_branch.js"></script>
+<script src="js/levels/l19_b_ballast.js"></script>
+<script src="js/levels/l20_b_reference.js"></script>
+<script src="js/levels/l21_b_parallel.js"></script>
+<script src="js/levels/l22_b_or.js"></script>
+<script src="js/levels/l23_b_split.js"></script>
+<script src="js/levels/l24_b_inrush.js"></script>
+<script src="js/levels/l25_b_derate.js"></script>
+<script src="js/levels/l26_v_shunt.js"></script>
+<script src="js/levels/l27_v_scale.js"></script>
+<script src="js/levels/l28_v_trim.js"></script>
+<script src="js/levels/l29_v_bridge.js"></script>
+<script src="js/levels/l30_v_match.js"></script>
+<script src="js/levels/l31_v_leak.js"></script>
+<script src="js/levels/l32_v_share.js"></script>
+<script src="js/levels/l33_v_cal.js"></script>
+<script src="js/levels/l34_g_and.js"></script>
+<script src="js/levels/l35_g_or.js"></script>
+<script src="js/levels/l36_g_latch.js"></script>
+<script src="js/levels/l37_g_delay.js"></script>
+<script src="js/levels/l38_g_interlock.js"></script>
+<script src="js/levels/l39_g_dim.js"></script>
+<script src="js/levels/l40_g_soft.js"></script>
+<script src="js/levels/l41_d_split.js"></script>
+<script src="js/levels/l42_d_cascade.js"></script>
+<script src="js/levels/l43_d_clamp.js"></script>
+<script src="js/levels/l44_d_pulse.js"></script>
+<script src="js/levels/l45_d_load.js"></script>
+<script src="js/levels/l46_d_restore.js"></script>
+<script src="js/levels/l47_d_core.js"></script>
+<script src="js/levels/l48_e_listen.js"></script>
+<script src="js/levels/l49_e_polarity.js"></script>
+<script src="js/levels/l50_e_bleed.js"></script>
+<script src="js/levels/l51_e_share.js"></script>
+<script src="js/levels/l52_e_pair.js"></script>
+<script src="js/levels/l53_e_line.js"></script>
+<script src="js/levels/l54_e_eff.js"></script>
+<script src="js/levels/l55_e_highside.js"></script>
+<script src="js/levels/l56_e_leak.js"></script>
+<script src="js/levels/l57_e_buffer.js"></script>
+<script src="js/levels/l58_e_charge.js"></script>
+<script src="js/levels/l59_e_fuse.js"></script>
+<script src="js/levels/l60_e_reserve.js"></script>
+<script src="js/levels/l61_e_light.js"></script>
+<script src="js/levels/l62_e_budget.js"></script>
+<script src="js/levels/l63_x_logger.js"></script>
+<script src="js/levels/l64_u_share.js"></script>
+<script src="js/levels/l65_u_bridge.js"></script>
+<script src="js/levels/l66_u_transit.js"></script>
+
+<script src="js/main.js"></script>
+</body>
+</html>
