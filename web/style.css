@@ -26,11 +26,11 @@ html, body {
 #stage-outer { position: fixed; inset: 0; overflow: hidden; }
 #stage {
   position: absolute; left: 50%; top: 50%;
-  width: 1600px; height: 900px;
+  width: 1600px; height: var(--sh, 900px);
   background: #050608;
   transform-origin: center center;
 }
-#world { position: absolute; left: 0; top: 0; width: 1600px; height: 900px; }
+#world { position: absolute; left: 0; top: var(--wy, 0px); width: 1600px; height: 900px; }
 
 /* Сенсорный экран. Канва сама понимает перетаскивание и щипок (pointer-
    события, engine/touch.js), поэтому браузер не должен в это время листать
@@ -45,7 +45,7 @@ html, body { touch-action: manipulation; overscroll-behavior: none; }
   -webkit-tap-highlight-color: transparent;
 }
 #ui-layer {
-  position: absolute; left: 0; top: 0; width: 1600px; height: 900px;
+  position: absolute; left: 0; top: 0; width: 1600px; height: var(--sh, 900px);
   pointer-events: none;
 }
 #ui-layer > * { pointer-events: auto; }
@@ -240,7 +240,7 @@ html, body { touch-action: manipulation; overscroll-behavior: none; }
 /* --- Экран победы -------------------------------------------------------- */
 
 .overlay {
-  position: absolute; left: 0; top: 0; width: 1600px; height: 900px; z-index: 40;
+  position: absolute; left: 0; top: 0; width: 1600px; height: var(--sh, 900px); z-index: 40;
   background: radial-gradient(ellipse at center, rgba(4, 12, 14, .72), rgba(2, 4, 6, .93));
   display: flex; align-items: center; justify-content: center;
   animation: fade .25s ease-out;
@@ -267,7 +267,7 @@ html, body { touch-action: manipulation; overscroll-behavior: none; }
 /* --- Главное меню -------------------------------------------------------- */
 
 .menu {
-  position: absolute; left: 0; top: 0; width: 1600px; height: 900px;
+  position: absolute; left: 0; top: 0; width: 1600px; height: var(--sh, 900px);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 14px;
 }
@@ -301,7 +301,7 @@ html, body { touch-action: manipulation; overscroll-behavior: none; }
 /* --- Кодекс -------------------------------------------------------------- */
 
 .codex {
-  position: absolute; left: 0; top: 0; width: 1600px; height: 900px; z-index: 35;
+  position: absolute; left: 0; top: 0; width: 1600px; height: var(--sh, 900px); z-index: 35;
   background: rgba(4, 6, 9, .95);
   display: flex; flex-direction: column; align-items: center; padding: 40px 0;
 }
@@ -391,4 +391,47 @@ html, body { touch-action: manipulation; overscroll-behavior: none; }
   border-left: 3px solid rgba(110, 231, 168, .45);
   padding-left: 12px;
   margin-top: 12px;
+}
+
+/* --- Планшет: крупнее интерфейс ------------------------------------------
+   Сцена 1600×900 уменьшается под экран целиком, и на планшете текст в 15 px
+   становится ~10 px. Панели растут на коэффициент --k (main.js, applyUiBoost),
+   каждая вокруг того угла, к которому прижата, — иначе она уехала бы от края.
+   На большом экране --k = 1 и ничего не меняется. Плата и подписи на холсте
+   не затронуты. */
+:root { --k: 1; --ko: 1; }
+
+/* Прижаты к левому верхнему углу. Карточка «Плата» на карте — тоже: класс
+   ui-tl ставится ей в map.js. */
+.card-brief, .sandbox-palette, .ui-tl { transform: scale(var(--k)); transform-origin: 0 0; }
+/* К правому верхнему. */
+.card-meter, .nav { transform: scale(var(--k)); transform-origin: 100% 0; }
+/* К левому нижнему. :active у .btn задаёт свой transform — без второго
+   селектора нажатая кнопка на миг теряла бы масштаб. */
+.btn-repair, .btn.btn-repair:active { transform: scale(var(--k)); transform-origin: 0 100%; }
+/* По центру снизу; translateX(-50%) стоит первым и держит их по центру. */
+.goal, .map-hint, .menu-foot { transform: translateX(-50%) scale(var(--k)); transform-origin: 50% 100%; }
+/* Окна по центру экрана. */
+.win-card { transform: scale(var(--ko)); transform-origin: 50% 50%; }
+.menu-buttons { transform: scale(var(--ko)); transform-origin: 50% 0; }
+/* Подсказка и список номиналов ставятся из js (hud.js) с учётом --k. */
+.tip, .picker { transform: scale(var(--k)); transform-origin: 0 0; }
+
+/* Высота сцены — не всегда 900: на экране выше 16:9 (планшет 4:3) сцена
+   растягивается на всю высоту (--sh, main.js), а холст с платой (#world, его
+   размер прежний 1600×900) остаётся посередине (--wy). Панели интерфейса
+   получают полосы сверху и снизу, которые раньше пропадали чёрными
+   полями. */
+:root { --sh: 900px; --wy: 0px; }
+
+/* Крупный режим (класс ui-big ставит main.js): палитра Верстака прижата к
+   низу сцены, а не к фиксированной высоте 392 — иначе она наезжала бы на
+   карточку уровня, выросшую вместе с интерфейсом. */
+.ui-big .sandbox-palette { top: auto; bottom: 26px; transform-origin: 0 100%; }
+.palette-summary { cursor: pointer; font-size: 13px; color: var(--accent); padding: 4px 0; list-style-position: inside; }
+/* Есть палитра (Верстак) — полосу цели прижимаем к правому краю, иначе
+   выросшая вместе с интерфейсом полоса заходит под палитру. */
+.ui-big .goal:has(~ .sandbox-palette) {
+  left: auto; right: 24px; width: 640px;
+  transform: scale(var(--k)); transform-origin: 100% 100%;
 }

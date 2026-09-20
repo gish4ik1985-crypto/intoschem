@@ -847,19 +847,24 @@ function createLevel(spec) {
     }
     ctx.restore();
 
-    text(ctx, s.label, vec(x + 10, y + 12), { size: 11, align: 'left', color: colorToCss(Pal.TEXT_DIM) });
+    // Подписи самописца рисуются на холсте и уменьшались вместе со сценой:
+    // на планшете 9 px превращались в 6. Растут на тот же коэффициент, что и
+    // панели интерфейса (main.js, applyUiBoost).
+    const uk = window.UI_K || 1;
+    text(ctx, s.label, vec(x + 10, y + 12), { size: 11 * uk, align: 'left', color: colorToCss(Pal.TEXT_DIM) });
     text(ctx, fmt(spec.scope.get(m, P) || 0), vec(x + w - 10, y + 12), {
-      size: 12, align: 'right', color: colorToCss(Pal.WARN), font: '"Consolas", monospace',
+      size: 12 * uk, align: 'right', color: colorToCss(Pal.WARN), font: '"Consolas", monospace',
     });
-    text(ctx, '10 с назад', vec(x + 10, y + h - 9), { size: 9, align: 'left', color: colorToCss(Pal.TEXT_DIM, 0.6) });
-    text(ctx, 'сейчас', vec(x + w - 10, y + h - 9), { size: 9, align: 'right', color: colorToCss(Pal.TEXT_DIM, 0.6) });
+    text(ctx, '10 с назад', vec(x + 10, y + h - 9), { size: 9 * uk, align: 'left', color: colorToCss(Pal.TEXT_DIM, 0.6) });
+    text(ctx, 'сейчас', vec(x + w - 10, y + h - 9), { size: 9 * uk, align: 'right', color: colorToCss(Pal.TEXT_DIM, 0.6) });
   }
 
   // --- Мышь -----------------------------------------------------------------
 
   function toLevelCoords(clientX, clientY) {
-    const stage = document.getElementById('stage');
-    const rect = stage.getBoundingClientRect();
+    // Считаем от холста (#world), а не от всей сцены: на экране выше 16:9
+    // сцена выше холста, и холст опущен внутри неё (main.js, applyStageHeight).
+    const rect = document.getElementById('world').getBoundingClientRect();
     const sx = rect.width / 1600;
     const eff = effScale();
     return vec(((clientX - rect.left) / sx - CENTER.x) / eff + boardPan.x, ((clientY - rect.top) / sx - CENTER.y) / eff + boardPan.y);
@@ -1471,7 +1476,18 @@ function createLevel(spec) {
     const layer = uiLayer();
     const panel = el('div', 'card sandbox-palette', layer);
     el('div', 'card-title-small', panel).textContent = 'Детали';
-    const help = el('div', 'palette-help', panel);
+    // На маленьком экране длинная инструкция съедала пол-панели и палитра не
+    // помещалась по высоте: сворачиваем её под «Как пользоваться». На большом
+    // остаётся открытой — правило проекта: инструкция по управлению не должна
+    // прятаться за кнопкой (см. «Свободная сборка» в CLAUDE.md).
+    let help;
+    if ((window.UI_K || 1) > 1.15) {
+      const det = el('details', 'palette-details', panel);
+      el('summary', 'palette-summary', det).textContent = 'Как пользоваться';
+      help = el('div', 'palette-help', det);
+    } else {
+      help = el('div', 'palette-help', panel);
+    }
     help.textContent = 'Кнопка — взять деталь, клик по плате — поставить. Уже стоящую деталь можно взять и потащить мышью — она переместится, а правым кликом или кнопкой «Повернуть» — повернуть на 90°. Точку пайки, где к проводу подходит отвод, тоже можно потащить — она поедет вдоль своего провода. «Провод»: клик по выводу, потом по другому — а если второй конец не вывод, а просто точка на уже проложенном проводе, получится отвод от него, как шина. «Ластик»: наведи — подсветится красным то, что сотрётся, клик — сотрёт; у самого вывода сотрётся именно провод, а не вся деталь, а если на проводе есть точки пайки — только участок между соседними, остальное останется на месте. Колесо мыши мимо ручки или два пальца — зум платы.';
     const grid = el('div', 'palette-grid', panel);
     const kindButtons = {};

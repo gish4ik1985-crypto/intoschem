@@ -149,7 +149,7 @@ const MapScene = (() => {
     nav.appendChild(makeButton('Журнал', () => Journal.open(), 'btn-ghost'));
     nav.appendChild(makeBackButton('← В меню', () => SceneManager.goto(MenuScene)));
 
-    head = el('div', 'card', layer);
+    head = el('div', 'card ui-tl', layer);
     head.style.left = '24px';
     head.style.top = '24px';
     head.style.width = '320px';
@@ -228,8 +228,8 @@ const MapScene = (() => {
   }
 
   function stageCoords(e) {
-    const stage = document.getElementById('stage');
-    const rect = stage.getBoundingClientRect();
+    // От холста, а не от сцены: на высоком экране холст опущен внутри неё.
+    const rect = document.getElementById('world').getBoundingClientRect();
     const scale = rect.width / 1600;
     return vec((e.clientX - rect.left) / scale, (e.clientY - rect.top) / scale);
   }
@@ -426,19 +426,23 @@ const MapScene = (() => {
 
     // Пока узел не работает, у него есть только обозначение: назначение
     // записано в его памяти и читается после восстановления (journal.js).
-    text(ctx, Journal.displayTitle(d), vec(p.x, p.y + h / 2 - 22), {
-      size: 13, color: colorToCss(Pal.TEXT, 0.5 + 0.5 * lit), shadow: true,
+    // Подписи узла рисуются на холсте и уменьшались вместе со сценой; растут
+    // на коэффициент интерфейса (main.js), но не больше 1,25 — карточка узла
+    // ограничена по ширине, и название длиннее не поместилось бы.
+    const mk = Math.min(window.UI_K || 1, 1.25);
+    text(ctx, Journal.displayTitle(d), vec(p.x, p.y + h / 2 - 22 * mk), {
+      size: 13 * mk, color: colorToCss(Pal.TEXT, 0.5 + 0.5 * lit), shadow: true,
       font: needsWork ? '"Consolas", monospace' : undefined,
     });
     text(ctx, preview ? 'ещё не открыт' : (needsWork ? 'нужен ремонт' : 'работает · ' + Math.round(out * 100) + '%'),
       vec(p.x, p.y + h / 2 - 7), {
-        size: 11,
+        size: 11 * mk,
         color: preview ? colorToCss(Pal.TEXT_DIM, 0.8)
           : (needsWork ? colorToCss(Pal.WARN, 0.95) : colorToCss(Pal.ACCENT, 0.9)),
         font: '"Consolas", monospace',
       });
     text(ctx, '№' + d.index, vec(p.x - w / 2 + 10, p.y - h / 2 + 12), {
-      size: 10, align: 'left', color: colorToCss(Pal.SILK, 0.35), font: '"Consolas", monospace',
+      size: 10 * mk, align: 'left', color: colorToCss(Pal.SILK, 0.35), font: '"Consolas", monospace',
     });
   }
 

@@ -17,6 +17,45 @@ function fitStage() {
   const stage = document.getElementById('stage');
   const scale = Math.min(window.innerWidth / 1600, window.innerHeight / 900);
   if (scale > 0) stage.style.transform = 'translate(-50%, -50%) scale(' + scale + ')';
+  if (scale > 0) applyStageHeight(scale);
+  if (scale > 0) applyUiBoost(scale);
+}
+
+// Экран выше 16:9 (планшет 4:3, телефон стоя) раньше давал чёрные полосы
+// сверху и снизу, а панелям интерфейса при этом не хватало высоты. Теперь
+// сцена растягивается на всю высоту: панели занимают полосы, а холст с платой
+// остаётся посередине прежнего размера 1600×900 (#world сдвигается на
+// --wy). Всё, что переводит координаты мыши или ставит DOM по координатам
+// холста, обязано учитывать этот сдвиг: window.UI_DY — на сколько холст
+// опущен внутри сцены, window.UI_SH — полная высота сцены.
+function applyStageHeight(scale) {
+  const sh = Math.max(900, Math.round(window.innerHeight / scale));
+  const wy = Math.round((sh - 900) / 2);
+  const root = document.documentElement.style;
+  root.setProperty('--sh', sh + 'px');
+  root.setProperty('--wy', wy + 'px');
+  window.UI_SH = sh;
+  window.UI_DY = wy;
+}
+
+// Сцена рассчитана на 1600×900 и целиком уменьшается под экран: на планшете
+// 1024×768 (scale 0,64) текст в 15 px превращается в 9,6 px и не читается.
+// Плату уменьшать можно — она вся видна и так, — а вот подписи, цифры и кнопки
+// нет. Поэтому панели интерфейса доращиваются отдельным коэффициентом --k до
+// читаемого размера (около 0,92 от натурального), каждая вокруг своего угла
+// (см. «Планшет» в style.css). Потолок 1,5: дальше панели уже наезжают на плату.
+// На большом окне (scale ≥ 0,92) коэффициент 1 — ничего не меняется.
+// --ko — для окон по центру (победа, пауза, журнал): они большие, им хватит
+// меньшего роста, иначе не поместятся по высоте.
+function applyUiBoost(scale) {
+  const k = Math.min(1.5, Math.max(1, 0.92 / scale));
+  const ko = Math.min(1.25, k);
+  const root = document.documentElement.style;
+  root.setProperty('--k', k.toFixed(3));
+  root.setProperty('--ko', ko.toFixed(3));
+  window.UI_K = k;
+  // Класс для правил, которые зависят от «крупного» режима (палитра Верстака).
+  document.documentElement.classList.toggle('ui-big', k > 1.05);
 }
 
 // Esc — единая клавиша «назад»: сперва закрывает то, что открыто поверх

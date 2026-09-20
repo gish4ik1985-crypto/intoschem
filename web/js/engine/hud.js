@@ -62,9 +62,14 @@ const Picker = (() => {
     }
     // Позиционируем сразу, а не на следующем кадре: обращение к
     // offsetWidth само дожимает раскладку, и список не мигает в углу.
-    const w = node.offsetWidth, h = node.offsetHeight;
+    // Размер с учётом роста интерфейса на маленьком экране (--k, main.js):
+    // рост идёт от левого верхнего угла, и без него список вылезал бы за край.
+    // screenPos — координаты холста; холст опущен внутри сцены на UI_DY,
+    // а сцена может быть выше 900 (main.js, applyStageHeight).
+    const k = window.UI_K || 1, dy = window.UI_DY || 0, sh = window.UI_SH || 900;
+    const w = node.offsetWidth * k, h = node.offsetHeight * k;
     node.style.left = clamp(screenPos.x - w / 2, 12, 1600 - w - 12) + 'px';
-    node.style.top = clamp(screenPos.y - h - 26, 12, 900 - h - 12) + 'px';
+    node.style.top = clamp(screenPos.y + dy - h - 26, 12, sh - h - 12) + 'px';
   }
 
   function isOpen() { return !!node; }
@@ -82,9 +87,10 @@ const Tip = (() => {
     }
     node.innerHTML = html;
     node.style.display = '';
-    const w = node.offsetWidth || 160, h = node.offsetHeight || 60;
+    const k = window.UI_K || 1, dy = window.UI_DY || 0, sh = window.UI_SH || 900;
+    const w = (node.offsetWidth || 160) * k, h = (node.offsetHeight || 60) * k;
     node.style.left = clamp(screenPos.x + 18, 8, 1600 - w - 8) + 'px';
-    node.style.top = clamp(screenPos.y - h - 14, 8, 900 - h - 8) + 'px';
+    node.style.top = clamp(screenPos.y + dy - h - 14, 8, sh - h - 8) + 'px';
   }
   function hide() { if (node) node.style.display = 'none'; }
   function drop() { if (node) { node.remove(); node = null; } }
