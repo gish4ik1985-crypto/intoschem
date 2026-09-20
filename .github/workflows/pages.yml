@@ -44,6 +44,14 @@ jobs:
           mkdir _site
           cp web/index.html web/style.css _site/
           cp -r web/js _site/js
+      # GitHub Pages отдаёт файлы с Cache-Control: max-age=600, и обычное
+      # обновление страницы на планшете тянет старые js и css из кэша: правка
+      # выложена, а игрок её не видит. Номер коммита в адресе каждого файла
+      # делает адрес новым при каждой публикации.
+      - name: Версия в адресах файлов
+        run: |
+          V="${GITHUB_SHA::7}"
+          sed -i -E "s#(src=\"js/[^\"?]+)\"#\1?v=$V\"#g; s#(href=\"style\.css)\"#\1?v=$V\"#" _site/index.html
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
