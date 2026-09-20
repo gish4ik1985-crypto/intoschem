@@ -48,7 +48,14 @@ function applyStageHeight(scale) {
 // --ko — для окон по центру (победа, пауза, журнал): они большие, им хватит
 // меньшего роста, иначе не поместятся по высоте.
 function applyUiBoost(scale) {
-  const k = Math.min(1.5, Math.max(1, 0.92 / scale));
+  // Палец грубее курсора, а планшет держат дальше от глаз, чем монитор:
+  // для сенсорного экрана нужен размер крупнее. Планшет 1920×1200 (Honor Pad
+  // X8a) Android показывает как 1280×800, scale там 0,8, и с целью 0,92
+  // рост составил всего 1,15 — игрок его не заметил. С 1,15 выходит ~1,44,
+  // как на проверенном 1024×768. Мышь и большой монитор — прежние 0,92.
+  const coarse = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+  const target = coarse ? 1.15 : 0.92;
+  const k = Math.min(1.5, Math.max(1, target / scale));
   const ko = Math.min(1.25, k);
   const root = document.documentElement.style;
   root.setProperty('--k', k.toFixed(3));
