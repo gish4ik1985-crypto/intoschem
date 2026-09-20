@@ -97,6 +97,16 @@ const Tip = (() => {
   return { show, hide, drop };
 })();
 
+// Выдвижные панели телефона (см. «Телефон» в style.css): открыта одна из
+// трёх или ни одной. Кнопки живут в .phone-dock, который на большом экране
+// скрыт целиком.
+function toggleDrawer(cls) {
+  const root = document.documentElement.classList;
+  const was = root.contains(cls);
+  root.remove('drawer-brief', 'drawer-meter', 'drawer-palette');
+  if (!was) root.add(cls);
+}
+
 // --- Карточка уровня + приборы + цель ------------------------------------
 
 function buildLevelHud(spec, callbacks) {
@@ -166,6 +176,11 @@ function buildLevelHud(spec, callbacks) {
   const track = el('div', 'goal-track', goal);
   hud.goalFill = el('div', 'goal-fill', track);
   hud.goalNote = el('div', 'goal-note', goal);
+
+  // Кнопки телефона: «Задача» и «Приборы». «Детали» добавляет Верстак.
+  const dock = el('div', 'phone-dock', layer);
+  dock.appendChild(makeButton('Задача', () => toggleDrawer('drawer-brief'), 'btn-ghost'));
+  dock.appendChild(makeButton('Приборы', () => toggleDrawer('drawer-meter'), 'btn-ghost'));
 
   // Кнопка появляется только когда есть что менять — сгоревшую деталь.
   hud.repairBtn = makeButton('Заменить сгоревшее', callbacks.onRepair, 'btn-danger btn-repair');

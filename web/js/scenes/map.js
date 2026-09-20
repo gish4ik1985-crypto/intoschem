@@ -121,7 +121,9 @@ const MapScene = (() => {
 
   function mount() {
     camera = vec(0, 0);
-    zoom = 1.35;
+    // На телефоне сцена уменьшена до ×0,4, и узлы карты при обычном увеличении
+    // выходят мелкими — камера стартует ближе.
+    zoom = window.UI_PHONE ? 0.75 : 1.35;
     dragging = false;
     hover = null;
     glow = {};

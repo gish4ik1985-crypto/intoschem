@@ -435,3 +435,50 @@ html, body { touch-action: manipulation; overscroll-behavior: none; }
   left: auto; right: 24px; width: 640px;
   transform: scale(var(--k)); transform-origin: 100% 100%;
 }
+
+/* --- Телефон --------------------------------------------------------------
+   Класс ui-phone ставит main.js: сенсорный экран с короткой стороной < 500 px
+   (ландшафт ~800×360). Сцена там уменьшается до ×0,4, и панели, выросшие на
+   коэффициент, закрывали всю плату. Раскладка другая: плата на весь экран,
+   «Задача», «Приборы» и «Детали» спрятаны и раскрываются кнопками внизу справа
+   (phone-dock, hud.js), по одной за раз; полоса цели — тонкая линия прогресса
+   внизу. Классы drawer-* на <html> помнят, какая панель открыта. */
+#rotate-hint {
+  display: none; position: fixed; inset: 0; z-index: 1000;
+  background: #050608; color: var(--text);
+  align-items: center; justify-content: center; text-align: center;
+  padding: 32px; font-size: 20px; line-height: 1.5;
+}
+.ui-portrait #rotate-hint { display: flex; }
+
+.phone-dock { display: none; }
+.ui-phone .phone-dock {
+  display: flex; gap: 10px; position: absolute; right: 24px; bottom: 34px;
+  transform: scale(calc(var(--k) * 0.8)); transform-origin: 100% 100%;
+}
+
+.ui-phone .card-brief, .ui-phone .card-meter, .ui-phone .sandbox-palette,
+.ui-phone .ui-tl, .ui-phone .map-hint { display: none; }
+.ui-phone.drawer-brief .card-brief,
+.ui-phone.drawer-meter .card-meter,
+.ui-phone.drawer-palette .sandbox-palette { display: block; }
+
+/* Открытая панель не выше экрана и прокручивается внутри. */
+.ui-phone .card-brief, .ui-phone .card-meter, .ui-phone .sandbox-palette {
+  max-height: calc((var(--sh) - 160px) / var(--k)); overflow-y: auto;
+  touch-action: pan-y; top: 24px; bottom: auto; transform-origin: 0 0;
+}
+.ui-phone .card-meter { top: calc(20px + 46px * var(--k) * 0.7); transform-origin: 100% 0; }
+
+.ui-phone .nav { transform: scale(calc(var(--k) * 0.7)); }
+
+/* Полоса цели — только линия прогресса у нижнего края. Текст задачи и статус
+   лежат в панели «Задача». */
+.ui-phone .goal, .ui-phone .goal:has(~ .sandbox-palette) {
+  left: 0; right: 0; bottom: 0; width: auto; transform: none;
+  padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none;
+}
+.ui-phone .goal-text, .ui-phone .goal-note { display: none; }
+.ui-phone .goal-track { height: 18px; border-radius: 0; }
+
+.ui-phone .menu-buttons { transform: scale(1.45); }

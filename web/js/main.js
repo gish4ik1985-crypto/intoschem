@@ -7,6 +7,8 @@ const SceneManager = {
   goto(sceneModule) {
     if (this.current && this.current.unmount) this.current.unmount();
     document.getElementById('ui-layer').innerHTML = '';
+    // Выдвижные панели телефона (см. «Телефон» в style.css) не переезжают между сценами.
+    document.documentElement.classList.remove('drawer-brief', 'drawer-meter', 'drawer-palette');
     this.paused = false;
     this.current = sceneModule;
     sceneModule.mount();
@@ -54,15 +56,25 @@ function applyUiBoost(scale) {
   // рост составил всего 1,15 — игрок его не заметил. С 1,15 выходит ~1,44,
   // как на проверенном 1024×768. Мышь и большой монитор — прежние 0,92.
   const coarse = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+  // Телефон — сенсорный экран, у которого КОРОТКАЯ сторона меньше 500 px.
+  // Панелям там просто не хватает места: при ×0,4 они закрывали всю плату,
+  // поэтому у телефона отдельная раскладка (класс ui-phone, «Телефон» в
+  // style.css): плата на весь экран, панели сворачиваются под кнопки.
+  const phone = coarse && Math.min(window.innerWidth, window.innerHeight) < 500;
   const target = coarse ? 1.15 : 0.92;
-  const k = Math.min(1.5, Math.max(1, target / scale));
-  const ko = Math.min(1.25, k);
+  const k = Math.min(phone ? 2.6 : 1.5, Math.max(1, target / scale));
+  const ko = Math.min(phone ? 1.7 : 1.25, k);
   const root = document.documentElement.style;
   root.setProperty('--k', k.toFixed(3));
   root.setProperty('--ko', ko.toFixed(3));
   window.UI_K = k;
+  window.UI_PHONE = phone;
+  const cl = document.documentElement.classList;
   // Класс для правил, которые зависят от «крупного» режима (палитра Верстака).
-  document.documentElement.classList.toggle('ui-big', k > 1.05);
+  cl.toggle('ui-big', k > 1.05);
+  cl.toggle('ui-phone', phone);
+  // Игра горизонтальная: телефон стоя показывает просьбу повернуть.
+  cl.toggle('ui-portrait', phone && window.innerHeight > window.innerWidth);
 }
 
 // Esc — единая клавиша «назад»: сперва закрывает то, что открыто поверх

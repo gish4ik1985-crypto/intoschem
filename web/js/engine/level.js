@@ -1495,6 +1495,15 @@ function createLevel(spec) {
     // GameConfig.hasBlock) известен только на момент входа на уровень, а
     // не на момент разбора файла спеки (тот же приём, что и у spec.wires
     // для уровней с переменной топологией).
+    // Телефон: выбрал деталь или инструмент — панель убирается, иначе она
+    // закрывает плату, по которой сейчас надо нажать. На большом экране
+    // класса drawer-palette нет, и это ничего не делает.
+    panel.addEventListener('click', (e) => {
+      if (e.target.closest && e.target.closest('.btn')) document.documentElement.classList.remove('drawer-palette');
+    });
+    // Телефон: панель деталей прячется, кнопка «Детали» — в общем доке.
+    const dock = layer.querySelector && layer.querySelector('.phone-dock');
+    if (dock) dock.appendChild(makeButton('Детали', () => toggleDrawer('drawer-palette'), 'btn-ghost'));
     const palette = typeof spec.sandbox.palette === 'function' ? spec.sandbox.palette() : spec.sandbox.palette;
     for (const item of palette) {
       const b = makeButton(item.label, () => {
