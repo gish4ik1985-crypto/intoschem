@@ -18,6 +18,7 @@ const Level02 = createLevel(LevelRegistry.register({
     'Мест, где путь прерван, два. Одно — повреждение, второе — просто выключено.',
   ],
   codex: ['circuit', 'wire', 'switch', 'lamp', 'battery'],
+  water: true,
   vmax: 3.0,
   hold: 2.0,
   map: {

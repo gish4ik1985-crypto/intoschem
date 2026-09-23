@@ -532,3 +532,14 @@ html, body { touch-action: manipulation; overscroll-behavior: none; }
 .ui-phone .gauge-bar { height: calc(10px * var(--k)); border-radius: 99px; }
 .ui-phone .gauge-zone { border-radius: 99px; }
 .ui-phone .gauge-mark { top: calc(-3px * var(--k)); height: calc(16px * var(--k)); width: calc(4px * var(--k)); }
+
+/* --- Водяной вид (water.js) --------------------------------------------- */
+.btn-water { border-color: rgba(90, 170, 255, .6); color: #cfe8ff; }
+.water-caption {
+  position: absolute; left: 50%; bottom: calc(26px + 110px * var(--k)); transform: translateX(-50%);
+  white-space: nowrap; font-size: 14px; color: #a9d4ff; background: rgba(10, 30, 55, .8);
+  border: 1px solid rgba(90, 170, 255, .35); border-radius: 20px; padding: 6px 16px;
+  pointer-events: none;
+}
+.ui-big .water-caption { transform: translateX(-50%) scale(var(--k)); transform-origin: 50% 100%; }
+.ui-phone .water-caption { display: none; }

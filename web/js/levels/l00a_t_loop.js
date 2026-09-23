@@ -47,6 +47,7 @@
     ],
     codex: ['circuit', 'current', 'wire', 'lamp'],
     vmax: 12.0,
+    water: true,
     hold: 1.5,
     scale: DB.s.scale,
     board: DB.s.board,

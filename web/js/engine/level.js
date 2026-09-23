@@ -709,6 +709,26 @@ function createLevel(spec) {
     }
   }
 
+  // Водяной вид платы (water.js) — только у уровней с spec.water. Включён при
+  // входе на уровень, кнопка «Провода/Вода» в шапке переключает его.
+  let waterView = false;
+  // Направление и сила потока через деталь для водяного вида. Скорость воды
+  // считается по той же шкале, что у труб (максимальный rated дорожек
+  // уровня), иначе в детали вода бежала бы быстрее, чем в трубе рядом.
+  // Знак: положительный ток детали течёт от nets[0] к nets[1]. У блока
+  // питания вывод «a» — минус (nets[1]), у батарейки плюс нарисован справа
+  // (вывод «b» = nets[0], если не перевёрнута) — это знает water.js по
+  // полям i и flipped, сюда передаём только сам ток.
+  function waterPartView(part, view) {
+    const wl = typeof spec.wires === 'function' ? spec.wires(P) : (spec.wires || []);
+    const rated = wl.reduce((mx, w) => Math.max(mx, w.rated || 0), 0) || 0.05;
+    return Object.assign({}, view, {
+      i: part.i || 0,
+      flow: clamp(Math.abs(part.i || 0) / rated, 0, 1),
+      pressure: clamp(Math.abs(nodeV(part.nets ? part.nets[0] : 'GND')) / spec.vmax, 0, 1),
+    });
+  }
+
   // Дым и искры сгорания. Сгорание — лучший урок в игре («дал слишком много
   // тока — сгорело»), и оно должно быть заметным и немного весёлым, а не
   // только красной надписью. Частицы живут в координатах платы, время —
@@ -1503,6 +1523,7 @@ function createLevel(spec) {
     instantiate();
     if (spec.freeform) { rebuildFreeform(); freeformDirty = false; } else rebuild();
     simAccum = 0; holdTime = 0; elapsed = 0; won = false; hover = null; flashMsg = null; smoke = [];
+    waterView = !!spec.water;
     bestAtMount = GameConfig.getDeviceOutput(spec.id);
     scopeData = []; scopeAccum = 0;
     tool = 'idle'; placeKind = null; pendingWire = null; dragPart = null; dragTap = null;
@@ -1518,6 +1539,22 @@ function createLevel(spec) {
     });
 
     if (spec.freeform) buildPaletteHud();
+
+    // Водяной вид: кнопка в шапке и подпись-предупреждение, что аналогия —
+    // это аналогия («похоже, но не то же самое»).
+    if (spec.water) {
+      const nav = uiLayer().querySelector('.nav');
+      const cap = el('div', 'water-caption', uiLayer());
+      const sync = () => {
+        btn.textContent = waterView ? '⚡ Показать провода' : '💧 Показать воду';
+        cap.textContent = waterView
+          ? 'Вода вместо тока: насос — батарейка, трубы — провода. Похоже, но не то же самое.'
+          : 'Это та же схема, только в проводах.';
+      };
+      const btn = makeButton('', () => { waterView = !waterView; sync(); }, 'btn-ghost btn-water');
+      nav.insertBefore(btn, nav.firstChild);
+      sync();
+    }
 
     pinch = createPinch({ start: cancelDrags, change: pinchBoard });
     const stage = document.getElementById('stage');
@@ -1756,6 +1793,7 @@ function createLevel(spec) {
   function updateTip() {
     if (Picker.isOpen() || !hover) { Tip.hide(); return; }
     const rows = [];
+    if (waterView && Water.alias(hover)) rows.push(['В воде', Water.alias(hover)]);
     // Земля не участвует в общей ветке ниже (у неё нет `nets`, это точка
     // подключения, а не деталь с двумя выводами), и без этой строки на неё
     // вообще нельзя навести мышь и что-то увидеть — просто безымянный
@@ -1823,6 +1861,15 @@ function createLevel(spec) {
         : (w.via ? compI(w.via) : 0);
       const rated = w.rated || 0.05;
       const reverse = wireReverse(viaCur, w.dir);
+      // Водяной вид (water.js): та же дорожка — труба, ток — скорость воды.
+      if (waterView) {
+        Water.drawPipe(ctx, chain.pts, {
+          flow: clamp(Math.abs(viaCur) / rated, 0, 1),
+          pressure: clamp(Math.abs(nodeV(w.net)) / spec.vmax, 0, 1),
+          reverse,
+        });
+        continue;
+      }
       drawTrace(ctx, chain.pts, {
         width: w.width || 6,
         flow: clamp(Math.abs(viaCur) / rated, 0, 1),
@@ -1836,12 +1883,14 @@ function createLevel(spec) {
     // земли, общая шина питания и т. п.), — паяем такой же пятак, что и
     // на выводах. Без него в точке T-образного примыкания не видно,
     // соединены дорожки на самом деле или просто пересеклись на глаз.
-    for (const p of wireJunctions(wireList)) solderPad(ctx, p, 5);
+    for (const p of wireJunctions(wireList)) {
+      if (waterView) Water.joint(ctx, p); else solderPad(ctx, p, 5);
+    }
 
     // Пятаки под выводами — деталь стоит на плате, а не висит над ней.
     for (const id of Object.keys(P)) {
       const part = P[id];
-      if (part.kind === 'ground' || part.noPads) continue;
+      if (part.kind === 'ground' || part.noPads || waterView) continue;
       const terms = part.terminals || Parts[part.kind].terminals(part);
       for (const k of Object.keys(terms)) solderPad(ctx, addV(part.pos, rotateOffset(terms[k], part.rot)), 5);
     }
@@ -1849,7 +1898,7 @@ function createLevel(spec) {
     for (const id of Object.keys(P)) {
       const part = P[id];
       const box = partHit(part);
-      if (part.silk) Board.silkOutline(ctx, part.pos, box.w, box.h, part.silk, lampLight);
+      if (part.silk && !waterView) Board.silkOutline(ctx, part.pos, box.w, box.h, part.silk, lampLight);
     }
 
     // Сами детали.
@@ -1871,11 +1920,12 @@ function createLevel(spec) {
         charge: part.charge,
         pull: part.pull,
       }, spec.partView ? (spec.partView(part, m, P) || {}) : {});
-      Parts[part.kind].draw(ctx, part, view);
+      if (!waterView || !Water.drawPart(ctx, part, waterPartView(part, view))) Parts[part.kind].draw(ctx, part, view);
       ctx.restore();
 
       // Подпись номинала под деталью — читается без наведения мыши.
-      if (part.showValue) {
+      // В водяном виде деталь подписывает себя сама (water.js).
+      if (part.showValue && !waterView) {
         const box = partHit(part);
         text(ctx, part.valueText ? part.valueText(part) : fmtOhms(part.value), addV(part.pos, vec(0, box.h / 2 + 12)), {
           size: 12, color: colorToCss(Pal.TEXT, 0.8), weight: '600', shadow: true,
