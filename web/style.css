@@ -180,7 +180,7 @@ html, body { touch-action: manipulation; overscroll-behavior: none; }
   background: var(--warn); border-radius: 3px; transition: left .15s ease-out;
 }
 .gauge.is-in .gauge-mark { background: var(--ok); }
-.ui-phone .gauge { display: none; }
+
 .goal-note { margin-top: 8px; font-size: 13px; color: var(--text-dim); font-family: var(--mono); }
 .goal.is-done .goal-note { color: var(--ok); }
 
@@ -467,7 +467,7 @@ html, body { touch-action: manipulation; overscroll-behavior: none; }
 
 .phone-dock { display: none; }
 .ui-phone .phone-dock {
-  display: flex; gap: 10px; position: absolute; right: 24px; bottom: 34px;
+  display: flex; gap: 10px; position: absolute; right: 24px; bottom: 64px;
   transform: scale(calc(var(--k) * 0.8)); transform-origin: 100% 100%;
 }
 
@@ -496,3 +496,39 @@ html, body { touch-action: manipulation; overscroll-behavior: none; }
 .ui-phone .goal-track { height: 18px; border-radius: 0; }
 
 .ui-phone .menu-buttons { transform: scale(1.45); }
+
+/* --- Телефон: окна поверх игры и шкала цели ---------------------------------
+   Сцена на телефоне уменьшена до ×0,4, и окна с текстом (кодекс, журнал,
+   пауза, победа) при своих 14 px выходили по 6–9 px. Увеличивать их
+   transform-ом нельзя — они перестают помещаться. Поэтому окно целиком
+   получает zoom: --k, а его логический размер делится на --k, и раскладка
+   внутри честно перестраивается под узкий экран. */
+.ui-phone .overlay, .ui-phone .codex {
+  zoom: var(--k);
+  width: calc(1600px / var(--k)); height: calc(var(--sh, 900px) / var(--k));
+}
+.ui-phone .win-card {
+  transform: none; width: auto; max-width: 94%; max-height: 94%; box-sizing: border-box;
+  overflow-y: auto; padding: 16px 18px; touch-action: pan-y;
+}
+/* Журнал длинный: прокручивается список, кнопки остаются на виду. */
+.ui-phone .journal-card { width: 94%; display: flex; flex-direction: column; overflow: hidden; }
+.ui-phone .journal-body { max-height: none; flex: 1; min-height: 0; overflow-y: auto; touch-action: pan-y; }
+.ui-phone .codex { padding: 52px 0 8px; box-sizing: border-box; }
+.ui-phone .codex-sub { display: none; }
+.ui-phone .codex-head { font-size: 16px; position: absolute; left: 20px; top: 16px; }
+.ui-phone .codex-close { top: 6px; right: 10px; }
+.ui-phone .codex-body {
+  width: 96%; height: 100%; gap: 10px;
+}
+.ui-phone .codex-nav { width: 34%; touch-action: pan-y; }
+.ui-phone .codex-article { width: auto; flex: 1; padding: 12px 14px; touch-action: pan-y; }
+
+/* Шкала цели на телефоне: вместо тонкой полосы выдержки, во всю ширину. */
+.ui-phone .gauge {
+  display: flex; margin: 0; padding: 0 calc(24px * var(--k)) 6px;
+  font-size: calc(12px * var(--k));
+}
+.ui-phone .gauge-bar { height: calc(10px * var(--k)); border-radius: 99px; }
+.ui-phone .gauge-zone { border-radius: 99px; }
+.ui-phone .gauge-mark { top: calc(-3px * var(--k)); height: calc(16px * var(--k)); width: calc(4px * var(--k)); }
