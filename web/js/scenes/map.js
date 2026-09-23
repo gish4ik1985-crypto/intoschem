@@ -97,6 +97,8 @@ const MapScene = (() => {
   function isLit(d) {
     if (d.map.start) return true;
     if (GameConfig.isRepaired(d.id)) return true;
+    // Инженерный режим: всё, что не входит в детскую дорогу, ждёт её конца.
+    if (!LevelRegistry.isKids(d.id) && !LevelRegistry.kidsDone()) return false;
     // Узел, которого нет в описи, открывается не светом соседа, а тем, что
     // игрок снял все шесть неучтённых токов. Кабеля к нему нет и быть не
     // может: он и питался тем, что подворовывал с чужих шин.
@@ -121,7 +123,11 @@ const MapScene = (() => {
   // Прибор «доступен» — открыт светом, но ещё не работает. Именно на них
   // игрок и должен смотреть, возвращаясь на карту.
   function available() {
-    return devices().filter((d) => isLit(d) && !GameConfig.isRepaired(d.id));
+    const kp = LevelRegistry.kidsPath;
+    const rank = (d) => (kp.indexOf(d.id) >= 0 ? kp.indexOf(d.id) : kp.length);
+    // Первым — следующий по детской дороге: на него смотрит камера.
+    return devices().filter((d) => isLit(d) && !GameConfig.isRepaired(d.id))
+      .sort((a, b) => rank(a) - rank(b));
   }
 
   function mount() {
@@ -403,6 +409,9 @@ const MapScene = (() => {
     for (const d of devices()) {
       if (!isVisible(d)) continue;
       for (const src of parentsOf(d)) {
+        // Кабель — только между двумя видимыми узлами: детская дорога
+        // открывает узлы, чьи соседи по кабелю ещё спрятаны.
+        if (!isVisible(src)) continue;
         const a = src.map.pos, b = d.map.pos;
         const litLevel = Math.min(lightAt(a, null), lightAt(b, null));
         const mid = midV(a, b);

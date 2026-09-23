@@ -152,6 +152,10 @@ const Level17 = createLevel(LevelRegistry.register({
   },
 
   status(m) {
+    // После первого прохождения Верстак — песочница: задание сделано, и
+    // схема без светодиода больше не «ошибка», а просто опыт.
+    const sandbox = GameConfig.isRepaired('workbench');
+    if (sandbox && m.ledCount === 0) return ['Песочница: задание выполнено, собирай что хочешь. Наводи на детали — увидишь ток и напряжение.', 'good'];
     if (m.total === 0) return ['Плата пуста. Возьми деталь из палитры слева и поставь на плату.', 'neutral'];
     if (m.ledCount === 0) return ['Схема есть, а светодиода в ней нет — цели без него не достичь.', 'neutral'];
     if (m.anyBurnt) return ['Светодиод сгорел: ток был слишком большой. Замени его и ограничь ток резистором посерьёзнее.', 'bad'];
@@ -162,6 +166,7 @@ const Level17 = createLevel(LevelRegistry.register({
   },
 
   goal(m) {
+    if (GameConfig.isRepaired('workbench') && !m.ledCount) return { ok: false, text: 'Песочница — собирай что хочешь.', note: 'Задание уже выполнено.' };
     if (m.anyBurnt) return { ok: false, note: 'Светодиод сгорел — замени и собери цепь заново.' };
     if (!m.ledCount) return { ok: false, note: 'В схеме нет светодиода.' };
     return {

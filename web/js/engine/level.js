@@ -74,6 +74,12 @@ const LevelRegistry = {
     'fuse_box', 't_power', 't_diode', 'led', 'motor', 'divider', 'v_trim',
     'g_and', 'g_or', 'flash', 'beacon', 'pump', 'sensor',
   ],
+  // Инженерный режим: остальные уровни открываются на карте только после
+  // того, как пройдена вся детская дорога (isLit в map.js).
+  kidsDone() {
+    return this.kidsPath.every((id) => GameConfig.isRepaired(id));
+  },
+  isKids(id) { return this.kidsPath.indexOf(id) >= 0; },
   kidsPrev(id) {
     const i = this.kidsPath.indexOf(id);
     return i > 0 ? this.kidsPath[i - 1] : null;
@@ -703,6 +709,45 @@ function createLevel(spec) {
     }
   }
 
+  // Дым и искры сгорания. Сгорание — лучший урок в игре («дал слишком много
+  // тока — сгорело»), и оно должно быть заметным и немного весёлым, а не
+  // только красной надписью. Частицы живут в координатах платы, время —
+  // собственное (performance.now), чтобы дым шёл и на паузе, и во время
+  // экрана победы — плата при этом не пересчитывается.
+  let smoke = [];
+  function puff(part, n, big) {
+    const now = performance.now() / 1000;
+    for (let k = 0; k < n; k++) {
+      const spark = big && k % 3 === 0;
+      smoke.push({
+        x: part.pos.x + (Math.random() - 0.5) * 16, y: part.pos.y - 4,
+        vx: (Math.random() - 0.5) * (spark ? 260 : 36),
+        vy: -(spark ? 120 + Math.random() * 160 : 26 + Math.random() * 30),
+        born: now, life: spark ? 0.5 + Math.random() * 0.3 : (big ? 1.8 : 1.3) + Math.random(),
+        r: big ? 8 + Math.random() * 8 : 4 + Math.random() * 3, spark,
+      });
+    }
+    if (smoke.length > 220) smoke = smoke.slice(-220);
+  }
+  function drawSmoke(ctx) {
+    if (!smoke.length) return;
+    const now = performance.now() / 1000;
+    smoke = smoke.filter((s) => now - s.born < s.life);
+    ctx.save();
+    for (const s of smoke) {
+      const t = now - s.born, k = t / s.life;
+      const x = s.x + s.vx * t, y = s.y + s.vy * t + (s.spark ? 260 * t * t : 0);
+      if (s.spark) {
+        ctx.fillStyle = colorToCss(Pal.WARN, 1 - k);
+        ctx.beginPath(); ctx.arc(x, y, 2.2, 0, Math.PI * 2); ctx.fill();
+      } else {
+        ctx.fillStyle = 'rgba(150,150,155,' + (0.42 * (1 - k)).toFixed(3) + ')';
+        ctx.beginPath(); ctx.arc(x + Math.sin(t * 3 + s.r) * 6, y, s.r * (1 + k * 1.6), 0, Math.PI * 2); ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
+
   function nodeV(name) {
     if (name === 'GND' || name === undefined) return 0;
     const v = sol.nodeVoltage[name];
@@ -742,11 +787,14 @@ function createLevel(spec) {
         if (part.heat > 1.0) {
           part.burnt = true;
           part.heat = 1.0;
+          puff(part, 22, true);
           playSound(Audio.burn);
           flash('Деталь сгорела: ' + (part.name || part.silk || 'элемент'), 'bad');
         }
       } else if (part.burnt) {
         part.heat = approach(part.heat, 0, 1.2, dt);
+        // Сгоревшая деталь ещё дымится тонкой струйкой.
+        if (Math.random() < dt * 2.5) puff(part, 1, false);
       }
 
       if (part.rated && part.rated.pNom) {
@@ -757,6 +805,7 @@ function createLevel(spec) {
       // Предохранитель сгорел по току — звук «пшш»
       if (part.kind === 'fuse' && part.blown && !part._blownPlayed) {
         part._blownPlayed = true;
+        puff(part, 12, true);
         playSound(Audio.fuseBlow);
       }
       if (part.kind === 'fuse' && !part.blown) {
@@ -1453,7 +1502,7 @@ function createLevel(spec) {
   function mount() {
     instantiate();
     if (spec.freeform) { rebuildFreeform(); freeformDirty = false; } else rebuild();
-    simAccum = 0; holdTime = 0; elapsed = 0; won = false; hover = null; flashMsg = null;
+    simAccum = 0; holdTime = 0; elapsed = 0; won = false; hover = null; flashMsg = null; smoke = [];
     bestAtMount = GameConfig.getDeviceOutput(spec.id);
     scopeData = []; scopeAccum = 0;
     tool = 'idle'; placeKind = null; pendingWire = null; dragPart = null; dragTap = null;
@@ -1643,6 +1692,10 @@ function createLevel(spec) {
         // Карта при следующем входе покажет, как этот прибор оживает (map.js).
         // Не сохраняется: после перезагрузки анимация уже не нужна.
         GameConfig.justRepaired = spec.id;
+        if (LevelRegistry.isKids(spec.id) && LevelRegistry.kidsDone()) {
+          unlocks.push('Детская дорога пройдена! Открыт инженерный режим: на карте появились ещё '
+            + (LevelRegistry.list.length - LevelRegistry.kidsPath.length) + ' узлов посложнее.');
+        }
         for (const d of LevelRegistry.list) {
           const n = d.map && d.map.needs;
           if (n && n.indexOf(spec.id) >= 0 && n.every((id) => GameConfig.isRepaired(id))) {
@@ -1829,6 +1882,8 @@ function createLevel(spec) {
         });
       }
     }
+
+    drawSmoke(ctx);
 
     // Подсветка того, что под курсором, — сразу видно, что кликабельно.
     if (hover && hover.interact && !Picker.isOpen()) {
