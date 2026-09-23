@@ -1614,6 +1614,18 @@ function createLevel(spec) {
           flash('Новый блок в Верстаке: «' + b.title + '»', 'good');
         }
       }
+      // Узел, открытый через map.needs, висит на карте без кабеля к этому
+      // уровню — игрок сам его не найдёт, поэтому о нём говорит экран победы
+      // (flash на плате живёт 2,6 с и прячется под этим экраном).
+      const unlocks = [];
+      if (bestAtMount <= GameConfig.REPAIRED_THRESHOLD) {
+        for (const d of LevelRegistry.list) {
+          const n = d.map && d.map.needs;
+          if (n && n.indexOf(spec.id) >= 0 && n.every((id) => GameConfig.isRepaired(id))) {
+            unlocks.push('Открылся новый узел: «' + d.title + '». Ищи его на карте.');
+          }
+        }
+      }
       // Возврат на уже настроенный прибор не должен снова показывать
       // экран победы — только если игрок реально сделал лучше, чем было.
       const worthShowing = bestAtMount <= GameConfig.REPAIRED_THRESHOLD || score > bestAtMount + 0.01;
@@ -1622,6 +1634,7 @@ function createLevel(spec) {
         score,
         scoreNote: spec.scoreNote ? spec.scoreNote(m, P, score) : '',
         next: nxt,
+        unlocks,
       }, {
         onNext: () => SceneManager.goto(nxt ? nxt.scene : MapScene),
         onMap: () => SceneManager.goto(MapScene),

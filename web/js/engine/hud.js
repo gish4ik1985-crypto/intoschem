@@ -238,6 +238,7 @@ function showWinOverlay(spec, result, callbacks) {
   el('div', 'win-score-note', bar).textContent = result.scoreNote;
 
   el('div', 'win-lesson', win).textContent = spec.lesson;
+  for (const u of result.unlocks || []) el('div', 'win-unlock', win).textContent = u;
 
   const row = el('div', 'win-buttons', win);
   // Кнопка называет следующий прибор поимённо: «Дальше» само по себе не
