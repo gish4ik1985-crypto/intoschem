@@ -201,6 +201,30 @@ function buildLevelHud(spec, callbacks) {
       '<div class="meter-row' + (r[2] ? ' is-' + r[2] : '') + '"><span>' + r[0] + '</span><b>' + r[1] + '</b></div>').join('');
   };
 
+  // Шкала «мало — в самый раз — много» (spec.gauge): цель видна как зелёная
+  // зона и бегунок, а не как число в допуске. Числа остаются на приборах.
+  let gauge = null;
+  hud.setGauge = (g) => {
+    if (!g) { if (gauge) gauge.root.style.display = 'none'; return; }
+    if (!gauge) {
+      const root = el('div', 'gauge');
+      goal.insertBefore(root, track);
+      const lo = el('span', 'gauge-word', root);
+      const bar = el('div', 'gauge-bar', root);
+      const zone = el('div', 'gauge-zone', bar);
+      const mark = el('div', 'gauge-mark', bar);
+      const hi = el('span', 'gauge-word', root);
+      gauge = { root, lo, hi, zone, mark };
+    }
+    gauge.root.style.display = '';
+    gauge.lo.textContent = g.lowWord;
+    gauge.hi.textContent = g.highWord;
+    gauge.zone.style.left = (g.a * 100) + '%';
+    gauge.zone.style.width = ((g.b - g.a) * 100) + '%';
+    gauge.mark.style.left = (clamp(g.pos, 0, 1) * 100) + '%';
+    gauge.root.classList.toggle('is-in', g.pos >= g.a && g.pos <= g.b);
+  };
+
   hud.setGoal = (goalTextValue, progress, note, done) => {
     hud.goalText.textContent = goalTextValue;
     hud.goalFill.style.width = Math.round(clamp(progress, 0, 1) * 100) + '%';

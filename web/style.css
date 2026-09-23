@@ -170,6 +170,17 @@ html, body { touch-action: manipulation; overscroll-behavior: none; }
   transition: width .12s linear;
   box-shadow: 0 0 12px rgba(47, 212, 200, .5);
 }
+/* Со шкалой полоса выдержки не нужна: «Держим… 1,2 с» пишется под ней. */
+.goal:has(.gauge:not([style*="none"])) .goal-track { display: none; }
+.gauge { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-dim); }
+.gauge-bar { position: relative; flex: 1; height: 16px; background: rgba(255, 255, 255, .07); border-radius: 8px; }
+.gauge-zone { position: absolute; top: 0; bottom: 0; background: rgba(110, 231, 168, .35); border-radius: 8px; min-width: 10px; }
+.gauge-mark {
+  position: absolute; top: -4px; width: 6px; height: 24px; margin-left: -3px;
+  background: var(--warn); border-radius: 3px; transition: left .15s ease-out;
+}
+.gauge.is-in .gauge-mark { background: var(--ok); }
+.ui-phone .gauge { display: none; }
 .goal-note { margin-top: 8px; font-size: 13px; color: var(--text-dim); font-family: var(--mono); }
 .goal.is-done .goal-note { color: var(--ok); }
 

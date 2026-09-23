@@ -21,7 +21,8 @@ const Level03 = createLevel(LevelRegistry.register({
   vmax: 9.0,
   hold: 2.5,
   map: { pos: vec(108, -700), radius: 900, color: hex(0x8fd8ff), from: ['flashlight', 't_check'], icon: { kind: 'lamp' } },
-  goalText: 'Лампа светит вполсилы: ток 130–160 мА.',
+  goalText: 'Лампа светит вполсилы — бегунок в зелёной зоне.',
+  gauge: { lowWord: 'тускло', highWord: 'ярко', low: 'Тускло — возьми резистор поменьше.', high: 'Слишком ярко — возьми резистор побольше.' },
   scope: { label: 'Ток через лампу', get: (m) => m.i, min: 0, max: 0.32, band: [0.13, 0.16], fmt: fmtAmps },
 
   parts: [

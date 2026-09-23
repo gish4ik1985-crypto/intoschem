@@ -49,7 +49,8 @@
     scale: DB.l.scale,
     board: DB.l.board,
     map: { pos: vec(-322, 250), radius: 900, color: hex(0x6ee7a8), from: ['b_parallel', 'b_or'], icon: { kind: 'toggle' } },
-    goalText: 'Оба ключа замкнуты, привод берёт 209 мА.',
+    goalText: 'Оба ключа замкнуты, привод крутится как надо.',
+    gauge: { lowWord: 'слабо', highWord: 'сильно', low: 'Привод крутится слабо — резистор поменьше.', high: 'Привод крутится слишком сильно — резистор побольше.' },
     scope: { label: 'Ток привода', get: (m) => m.i, min: 0, max: 0.4, band: [0.1923, 0.2257], fmt: fmtAmps },
 
     parts: L.parts,

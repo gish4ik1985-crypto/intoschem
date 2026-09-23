@@ -46,7 +46,8 @@
     scale: DB.s.scale,
     board: DB.s.board,
     map: { pos: vec(215, -1250), radius: 900, color: hex(0xff8a4a), from: 't_ground', icon: { kind: 'resistor', value: 100 } },
-    goalText: 'Ток в ветке — 100 мА.',
+    goalText: 'Подбери резистор, чтобы бегунок встал в зелёную зону.',
+    gauge: { lowWord: 'мало тока', highWord: 'много тока', low: 'Тока мало — возьми резистор поменьше.', high: 'Тока много — возьми резистор побольше.' },
     scope: { label: 'Ток в ветке', get: (m) => m.i, min: 0, max: 0.45, band: [0.09, 0.11], fmt: fmtAmps },
 
     parts: L.parts,

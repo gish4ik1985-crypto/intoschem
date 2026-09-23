@@ -34,7 +34,8 @@ const Level17 = createLevel(LevelRegistry.register({
   // не требуют — панорама внутри уровня всегда была безграничной.
   board: { x: -1170, y: -585, w: 2340, h: 1170 },
   map: { pos: vec(-967, -135), radius: 900, color: hex(0xffe08a), needs: ['garland'], icon: { kind: 'resistor', value: 220 } },
-  goalText: 'Собери цепь, чтобы светодиод горел ровно и не сгорел.',
+  goalText: 'Собери цепь: светодиод горит ровно, бегунок в зелёной зоне.',
+  gauge: { lowWord: 'тускло', highWord: 'сгорит', low: 'Тускло — резистор поменьше.', high: 'Слишком ярко, светодиод греется — резистор побольше.' },
   scope: { label: 'Ток через светодиод', get: (m) => m.bestI, min: 0, max: 0.045, band: [0.015, 0.026], fmt: fmtAmps },
 
   freeform: true,

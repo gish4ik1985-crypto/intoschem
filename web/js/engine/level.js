@@ -1645,12 +1645,30 @@ function createLevel(spec) {
     hud.setStatus(st[0], st[1]);
     hud.setMeter(spec.meter(m, P));
     const held = g.ok && holdTime >= spec.hold;
+    // spec.gauge: цель как шкала «мало — в самый раз — много». Величину и
+    // зелёную зону берёт у самописца (spec.scope) — там они уже есть и
+    // совпадают с условием победы. Подпись «мало/много» словами заменяет
+    // число из goal.note; число остаётся на приборах. Ноль (пусто, сгорело,
+    // разомкнуто) объясняет сам уровень, поэтому там остаётся его note.
+    let gaugeNote = null;
+    if (spec.gauge && spec.scope) {
+      const sc = spec.scope, gg = spec.gauge;
+      const v = sc.get(m, P), span = sc.max - sc.min;
+      const pos = isBadNum(v) ? 0 : (v - sc.min) / span;
+      hud.setGauge({
+        pos, a: (sc.band[0] - sc.min) / span, b: (sc.band[1] - sc.min) / span,
+        lowWord: gg.lowWord || 'мало', highWord: gg.highWord || 'много',
+      });
+      const alive = !m.anyBurnt && !isBadNum(v) && Math.abs(v) > span * 0.01;
+      if (alive && v < sc.band[0]) gaugeNote = gg.low;
+      else if (alive && v > sc.band[1]) gaugeNote = gg.high;
+    }
     hud.setGoal(
       g.text || spec.goalText,
       spec.hold > 0 ? holdTime / spec.hold : (g.ok ? 1 : 0),
       g.ok
         ? (holdTime >= spec.hold ? 'Держится стабильно.' : 'Держим… ' + (spec.hold - holdTime).toFixed(1) + ' с')
-        : (g.note || 'Условие пока не выполнено.'),
+        : (gaugeNote || g.note || 'Условие пока не выполнено.'),
       held,
     );
     hud.repairBtn.style.display = m.anyBurnt ? '' : 'none';

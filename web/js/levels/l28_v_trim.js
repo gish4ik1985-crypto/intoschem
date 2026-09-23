@@ -49,7 +49,8 @@
     scale: DB.s.scale,
     board: DB.s.board,
     map: { pos: vec(323, -300), radius: 900, color: hex(0xffc46b), from: ['v_scale', 'fuse_box'], icon: { kind: 'lamp' } },
-    goalText: 'Ток лампы — 250 мА.',
+    goalText: 'Лампа светит как надо — бегунок в зелёной зоне.',
+    gauge: { lowWord: 'тускло', highWord: 'ярко', low: 'Тускло — крути в сторону меньшего сопротивления.', high: 'Слишком ярко — крути в сторону большего сопротивления.' },
     scope: { label: 'Ток осветителя', get: (m) => m.i, min: 0, max: 0.45, band: [0.235, 0.265], fmt: fmtAmps },
 
     parts: L.parts,

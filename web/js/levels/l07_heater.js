@@ -24,7 +24,8 @@ const Level07 = createLevel(LevelRegistry.register({
   scale: 1.3,
   board: { x: -300, y: -132, w: 600, h: 264 },
   map: { pos: vec(-107, -535), radius: 900, color: hex(0xff9a5c), from: ['flashlight', 'divider'], icon: { kind: 'resistor', value: 150 } },
-  goalText: 'Стекло греется, и ни один резистор не перегрет.',
+  goalText: 'Стекло греется как надо, и ни один резистор не перегрет.',
+  gauge: { lowWord: 'холодно', highWord: 'жарко', low: 'Греет слабо — сопротивление великовато.', high: 'Греет слишком сильно — сопротивление маловато.' },
   scope: { label: 'Общий ток обогрева', get: (m) => m.total, min: 0, max: 0.3, band: [0.15, 0.172], fmt: fmtAmps },
 
   parts: [

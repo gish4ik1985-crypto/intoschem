@@ -39,7 +39,8 @@
     scale: DB.m.scale,
     board: DB.m.board,
     map: { pos: vec(-537, 250), radius: 900, color: hex(0x8fd0ff), from: ['g_and', 'b_or'], icon: { kind: 'resistor', value: 22 } },
-    goalText: 'Нагрузка — 290 мА, в каждом проводе не больше 180.',
+    goalText: 'Нагрузка работает, и ни один провод не перегружен.',
+    gauge: { lowWord: 'мало тока', highWord: 'много тока', low: 'Тока мало — резисторы поменьше.', high: 'Тока много — резисторы побольше.' },
     scope: { label: 'Ток нагрузки', get: (m) => m.i, min: 0, max: 0.5, band: [0.2697, 0.3103], fmt: fmtAmps },
 
     parts: L.parts,

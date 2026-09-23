@@ -25,7 +25,8 @@ const Level01 = createLevel(LevelRegistry.register({
     pos: vec(-322, -700), radius: 900, color: hex(0xff5a33), from: ['t_led', 't_diode'],
     icon: { kind: 'led', color: hex(0xff4a2c) },
   },
-  goalText: 'Светодиод горит ярко и не сгорает.',
+  goalText: 'Светодиод горит ярко и не сгорает — бегунок в зелёной зоне.',
+  gauge: { lowWord: 'тускло', highWord: 'сгорит', low: 'Тускло — возьми резистор поменьше.', high: 'Слишком ярко, светодиод греется — резистор побольше.' },
   scope: { label: 'Ток через светодиод', get: (m) => m.i, min: 0, max: 0.045, band: [0.015, 0.026], fmt: fmtAmps },
 
   parts: [

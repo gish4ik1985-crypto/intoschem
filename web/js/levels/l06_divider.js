@@ -24,7 +24,8 @@ const Level06 = createLevel(LevelRegistry.register({
   scale: 1.3,
   board: { x: -300, y: -135, w: 600, h: 270 },
   map: { pos: vec(108, -535), radius: 900, color: hex(0x9fd0ff), from: ['panel', 'fuse_box'], icon: { kind: 'resistor', value: 220 } },
-  goalText: 'На датчике около 3,6 В, и делитель не тратит лишний ток.',
+  goalText: 'На датчике нужное напряжение — бегунок в зелёной зоне.',
+  gauge: { lowWord: 'мало вольт', highWord: 'много вольт', low: 'Мало вольт — нижний резистор побольше.', high: 'Много вольт — верхний резистор побольше.' },
   scope: { label: 'Напряжение на датчике', get: (m) => m.uOut, min: 0, max: 9, band: [3.4, 3.8], fmt: fmtVolts },
 
   parts: [

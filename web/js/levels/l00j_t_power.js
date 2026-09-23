@@ -41,7 +41,8 @@
     scale: DB.s.scale,
     board: DB.s.board,
     map: { pos: vec(-430, -1085), radius: 900, color: hex(0xff8a4a), from: ['t_loop', 't_short'], icon: { kind: 'lamp' } },
-    goalText: 'Мощность лампы — 1,4 Вт.',
+    goalText: 'Лампа светит как положено — бегунок в зелёной зоне.',
+    gauge: { lowWord: 'тускло', highWord: 'перегрев', low: 'Тускло — возьми резистор поменьше.', high: 'Лампа перегревается — возьми резистор побольше.' },
     scope: { label: 'Мощность лампы', get: (m) => m.pLamp, min: 0, max: 3, band: [1.288, 1.512], fmt: fmtWatts },
 
     parts: L.parts,
