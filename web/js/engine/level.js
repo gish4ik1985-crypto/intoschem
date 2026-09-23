@@ -712,7 +712,9 @@ function createLevel(spec) {
   // Водяной вид платы (water.js) — только у уровней с spec.water. Включён при
   // входе на уровень, кнопка «Провода/Вода» в шапке переключает его.
   let waterView = false;
-  function hasWater() { return !!spec.water || (LevelRegistry.isKids(spec.id) && !spec.freeform); }
+  // У каждого провода свободной сборки свой резистор-провод (via 'w_<id>'),
+  // так что вода в Верстаке течёт по тому же честному току, что и везде.
+  function hasWater() { return !!spec.water || LevelRegistry.isKids(spec.id); }
   // Направление и сила потока через деталь для водяного вида. Скорость воды
   // считается по той же шкале, что у труб (максимальный rated дорожек
   // уровня), иначе в детали вода бежала бы быстрее, чем в трубе рядом.
@@ -1524,8 +1526,7 @@ function createLevel(spec) {
     instantiate();
     if (spec.freeform) { rebuildFreeform(); freeformDirty = false; } else rebuild();
     simAccum = 0; holdTime = 0; elapsed = 0; won = false; hover = null; flashMsg = null; smoke = [];
-    // Водяной вид — на всей детской дороге, кроме свободной сборки (там
-    // провода тянет игрок, это отдельная работа).
+    // Водяной вид — на всей детской дороге, включая Верстак.
     waterView = hasWater();
     bestAtMount = GameConfig.getDeviceOutput(spec.id);
     scopeData = []; scopeAccum = 0;

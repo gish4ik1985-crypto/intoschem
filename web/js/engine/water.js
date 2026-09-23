@@ -105,8 +105,18 @@ const Water = (() => {
     return part._wA;
   }
 
+  // Подпись всегда ровная: в Верстаке деталь можно повернуть, и надпись
+  // вместе с корпусом легла бы на бок или вверх ногами.
   function label(ctx, s, p, color) {
-    text(ctx, s, p, { size: 13, color: color || 'rgba(215,230,245,0.9)', weight: '600', shadow: true });
+    const opts = { size: 13, color: color || 'rgba(215,230,245,0.9)', weight: '600', shadow: true };
+    const m = ctx.getTransform();
+    const ang = Math.atan2(m.b, m.a);
+    if (Math.abs(ang) < 0.01) { text(ctx, s, p, opts); return; }
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(-ang);
+    text(ctx, s, vec(0, 0), opts);
+    ctx.restore();
   }
 
   function pumpBody(ctx, c, r, part, view) {
@@ -280,15 +290,17 @@ const Water = (() => {
     },
   };
 
-  // Крона: оба вывода сверху, «a» — плюс.
+  // Крона: оба вывода сверху, «b» — плюс, «a» — минус (parts.js); у
+  // перевёрнутой наоборот.
   draw.krona = (ctx, part, view) => {
     const t = T(part);
+    const plus = part.flipped ? t.a : t.b, minus = part.flipped ? t.b : t.a;
     const giving = (view.i || 0) < 0;
-    seg(ctx, vec(t.a.x, -16), t.a, view, 12, !giving);
-    seg(ctx, vec(t.b.x, -16), t.b, Object.assign({}, view, { pressure: 0.1 }), 12, giving);
+    seg(ctx, vec(plus.x, -16), plus, view, 12, !giving);
+    seg(ctx, vec(minus.x, -16), minus, Object.assign({}, view, { pressure: 0.1 }), 12, giving);
     pumpBody(ctx, vec(0, 8), 26, part, view);
     label(ctx, 'насос ' + (part.label || ''), vec(0, 52));
-    text(ctx, '+', vec(t.a.x + 12, t.a.y + 4), { size: 16, color: '#ffd166', weight: '700' });
+    text(ctx, '+', vec(plus.x + (plus.x < 0 ? -12 : 12), plus.y + 4), { size: 16, color: '#ffd166', weight: '700' });
     return true;
   };
   draw.resistor = (ctx, part, view) => {

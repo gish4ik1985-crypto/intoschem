@@ -543,3 +543,6 @@ html, body { touch-action: manipulation; overscroll-behavior: none; }
 }
 .ui-big .water-caption { transform: translateX(-50%) scale(var(--k)); transform-origin: 50% 100%; }
 .ui-phone .water-caption { display: none; }
+/* В Верстаке подписи про воду негде встать (палитра, кнопки), а ребёнок
+   видел её уже на всей детской дороге до него. */
+.sandbox-palette ~ .water-caption { display: none; }

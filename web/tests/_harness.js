@@ -19,7 +19,7 @@ function bundleFiles() {
   const head = [
     'js/engine/util.js', 'js/engine/palette.js', 'js/engine/draw.js', 'js/engine/board.js',
     'js/engine/parts.js', 'js/circuit.js', 'js/engine/devices.js', 'js/engine/audio.js', 'js/engine/touch.js', 'js/engine/hud.js',
-    'js/engine/rig.js', 'js/engine/blocks.js', 'js/engine/level.js', 'js/state.js', 'js/scenes/journal.js',
+    'js/engine/rig.js', 'js/engine/blocks.js', 'js/engine/water.js', 'js/engine/level.js', 'js/state.js', 'js/scenes/journal.js',
     'js/levels/_kit.js', 'js/levels/_deck.js',
   ].filter((f) => fs.existsSync(path.join(ROOT, f)));
   const levels = fs.readdirSync(path.join(ROOT, 'js/levels'))
