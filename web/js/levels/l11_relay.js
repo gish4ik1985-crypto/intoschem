@@ -110,7 +110,7 @@ const Level11 = createLevel(LevelRegistry.register({
 
   status(m) {
     if (!m.pressed) return ['Нажми и держи кнопку пуска — отпущенная, она держит цепь управления разомкнутой.', 'neutral'];
-    if (!m.closed) return ['Кнопка нажата, ток через катушку идёт, но его не хватает: якорь не притягивается.', 'warn'];
+    if (!m.closed) return ['Кнопка нажата, но тока мало — реле не щёлкает. Что-то лишнее мешает.', 'warn'];
     return ['Реле щёлкнуло, насос пошёл. ' + fmtAmps(m.iCoil) + ' управляют ' + fmtAmps(m.iPump) + '.', 'good'];
   },
 

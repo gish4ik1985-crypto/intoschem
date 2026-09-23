@@ -32,7 +32,7 @@ const Level03 = createLevel(LevelRegistry.register({
       silk: 'R1', nets: ['VCC', 'LAMP_A'], comp: 'R1', showValue: true, valueText: socketLabel,
       content: { kind: 'resistor', value: 10 },
       rated: { pMax: 1.6, tau: 1.0 },
-      interact: { type: 'pick', title: 'Резистор в гнездо', hint: 'Нажми, чтобы подобрать номинал', options: () => socketOptions({ empty: true, jumper: true }) },
+      interact: { type: 'pick', title: 'Резистор в гнездо', hint: 'Нажми, чтобы подобрать резистор', options: () => socketOptions({ empty: true, jumper: true }) },
     },
     {
       id: 'LAMP', kind: 'lamp', pos: vec(150, -48), name: 'Лампа подсветки',
@@ -75,7 +75,7 @@ const Level03 = createLevel(LevelRegistry.register({
     if (m.i > 0.16) return ['Ярче, чем нужно. Дежурная подсветка не должна слепить.', 'warn'];
     if (m.i < 0.02) return ['Почти не светит: почти всё напряжение осело на резисторе.', 'warn'];
     if (m.i < 0.13) return ['Тускловато. Сопротивление великовато.', 'warn'];
-    return ['Ровно дежурный режим. Так и надо.', 'good'];
+    return ['Светит вполсилы. Так и надо.', 'good'];
   },
 
   goal(m) {

@@ -34,14 +34,14 @@ const Level12 = createLevel(LevelRegistry.register({
       id: 'R', kind: 'socket', pos: vec(-40, -92), name: 'Зарядный резистор', silk: 'R1',
       nets: ['VCC', 'CAP'], comp: 'R1', showValue: true, valueText: socketLabel,
       content: { kind: 'resistor', value: 100 }, rated: { pMax: 2.0, tau: 1.0 },
-      interact: { type: 'pick', title: 'Через что заряжать', hint: 'Нажми, чтобы сменить номинал', options: () => socketOptions({ empty: false, jumper: false, kit: [100, 220, 470, 1000, 2200] }) },
+      interact: { type: 'pick', title: 'Через что заряжать', hint: 'Нажми, чтобы выбрать другой', options: () => socketOptions({ empty: false, jumper: false, kit: [100, 220, 470, 1000, 2200] }) },
     },
     {
       id: 'C', kind: 'capacitor', pos: vec(96, -66), name: 'Накопитель', silk: 'C1',
       value: 470e-6, vMax: 6, nets: ['CAP', 'GND'], comp: 'C1', flipped: true,
       showValue: true, valueText: (p) => fmtFarads(p.value), noPads: false,
       interact: {
-        type: 'pick', title: 'Ёмкость накопителя', hint: 'Нажми, чтобы сменить ёмкость',
+        type: 'pick', title: 'Какой конденсатор', hint: 'Нажми, чтобы выбрать другой',
         options: () => [470e-6, 1000e-6, 2200e-6, 4700e-6].map((f) => ({ label: fmtFarads(f), value: f })),
       },
     },
@@ -133,7 +133,7 @@ const Level12 = createLevel(LevelRegistry.register({
   },
 
   status(m) {
-    if (m.idle > 4 && !m.period) return ['Проблесков нет: напряжение вышло на полку и до порога так и не дошло. Сопротивление слишком большое.', 'bad'];
+    if (m.idle > 4 && !m.period) return ['Маячок не мигает: конденсатор не заряжается до конца. Резистор слишком большой.', 'bad'];
     if (!m.period) return ['Ждём первый проблеск…', 'neutral'];
     if (m.period < 1.35) return ['Частит: период ' + fmtSeconds(m.period) + '. Надо медленнее.', 'warn'];
     if (m.period > 1.95) return ['Слишком редко: период ' + fmtSeconds(m.period) + '.', 'warn'];

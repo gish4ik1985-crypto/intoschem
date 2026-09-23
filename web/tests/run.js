@@ -23,6 +23,7 @@ const suites = [
   require('./ground.test.js'),
   require('./_flowdir.js'),
   require('./blocks.test.js'),
+  require('./kids.test.js'),
 ];
 
 let pass = 0;

@@ -72,7 +72,7 @@ const Level07 = createLevel(LevelRegistry.register({
     if (m.total < 0.001) return ['Обогрева нет вообще — оба гнезда пустые.', 'neutral'];
     if (m.total > 0.172) return ['Тока больше нормы: суммарное сопротивление слишком маленькое.', 'warn'];
     if (m.total < 0.15) return ['Тока не хватает: суммарное сопротивление великовато.', 'warn'];
-    return ['Ровно 75 Ом на двоих. Обогрев вышел на режим, и никто не перегрет.', 'good'];
+    return ['Два резистора вместе дают 75 Ом. Стекло греется, никто не перегрет.', 'good'];
   },
 
   goal(m) {
@@ -104,6 +104,6 @@ function heaterSocket(id, y, name) {
     nets: ['VCC', 'GND'], comp: id, showValue: true, valueText: socketLabel,
     content: null,
     rated: { pMax: 1.5, tau: 0.9 },
-    interact: { type: 'pick', title: 'Нагревательный элемент', hint: 'Нажми, чтобы выбрать номинал', options: () => socketOptions({ jumper: false }) },
+    interact: { type: 'pick', title: 'Нагревательный элемент', hint: 'Нажми, чтобы выбрать резистор', options: () => socketOptions({ jumper: false }) },
   };
 }

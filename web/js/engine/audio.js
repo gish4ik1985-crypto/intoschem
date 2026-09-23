@@ -181,6 +181,33 @@ const Audio = (() => {
     });
   }
 
+  // Прибор ожил на карте: гул, который набирает частоту, и аккорд сверху.
+  function powerUp() {
+    if (!enabled) return;
+    const c = ensureCtx();
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(70, c.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(420, c.currentTime + 0.9);
+    gain.gain.setValueAtTime(0.001, c.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.05, c.currentTime + 0.5);
+    gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 1.1);
+    osc.connect(gain);
+    gain.connect(masterGain);
+    osc.start();
+    osc.stop(c.currentTime + 1.1);
+    [523, 659, 784, 1047].forEach((f, i) => {
+      setTimeout(() => playTone(f, 0.7, 'triangle', 0.07), 850 + i * 90);
+    });
+  }
+
+  // Открылся новый узел — короткий «динь».
+  function chime() {
+    playTone(1319, 0.35, 'sine', 0.06);
+    setTimeout(() => playTone(1760, 0.45, 'sine', 0.05), 70);
+  }
+
   // Ошибка / предупреждение — низкий бип
   function error() {
     playTone(200, 0.2, 'square', 0.1);
@@ -271,7 +298,7 @@ const Audio = (() => {
 
   return {
     click, relayClick, motorHum, capCharge, flash, burn,
-    win, error, liveWire, buttonPress, knobTurn, fuseBlow,
+    win, powerUp, chime, error, liveWire, buttonPress, knobTurn, fuseBlow,
     boardHumOn, boardHumOff,
     toggle, setVolume,
     initOnInteraction,

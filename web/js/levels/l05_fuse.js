@@ -36,7 +36,7 @@ const Level05 = createLevel(LevelRegistry.register({
       silk: 'FU1', nets: ['VCC', 'BUS'], comp: 'FUSE', value: 0.2, blown: false,
       showValue: true, valueText: (p) => (p.blown ? 'сгорел' : fmtFuse(p.value)),
       interact: {
-        type: 'pick', title: 'Поставить предохранитель', hint: 'Нажми, чтобы заменить или сменить номинал',
+        type: 'pick', title: 'Поставить предохранитель', hint: 'Нажми, чтобы заменить или выбрать другой',
         options: () => FUSE_KIT.map((a) => ({ label: fmtFuse(a), value: a, blown: false })),
       },
     },

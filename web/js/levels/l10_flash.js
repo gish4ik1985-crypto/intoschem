@@ -42,7 +42,7 @@ const Level10 = createLevel(LevelRegistry.register({
       id: 'RCH', kind: 'socket', pos: vec(70, -86), name: 'Зарядный резистор', silk: 'R1',
       nets: ['CHG', 'CAP'], comp: 'RCH', showValue: true, valueText: socketLabel,
       content: { kind: 'resistor', value: 470 }, rated: { pMax: 1.5, tau: 1.0 },
-      interact: { type: 'pick', title: 'Через что заряжать', hint: 'Нажми, чтобы сменить номинал', options: () => socketOptions({ empty: false, jumper: false, kit: [47, 100, 220, 470, 1000, 2200] }) },
+      interact: { type: 'pick', title: 'Через что заряжать', hint: 'Нажми, чтобы выбрать другой', options: () => socketOptions({ empty: false, jumper: false, kit: [47, 100, 220, 470, 1000, 2200] }) },
     },
     {
       id: 'CAP', kind: 'capacitor', pos: vec(190, -60), name: 'Накопитель', silk: 'C1',
@@ -122,8 +122,8 @@ const Level10 = createLevel(LevelRegistry.register({
 
   status(m, P) {
     if (m.iFlash > 0.2) return ['Вспышка! Конденсатор отдаёт всё, что накопил.', 'good'];
-    if (m.fired) return ['Вспышка засчитана. Можно повторить: накопитель заряжается заново.', 'good'];
-    if (!P.SWC.closed && m.uCap < 0.5) return ['Накопитель пуст, ключ заряда разомкнут.', 'neutral'];
+    if (m.fired) return ['Вспышка! Можно повторить: конденсатор заряжается заново.', 'good'];
+    if (!P.SWC.closed && m.uCap < 0.5) return ['Конденсатор пуст: замкни ключ заряда.', 'neutral'];
     if (m.ratio < 0.85) return ['Заряжается… ' + Math.round(m.ratio * 100) + '%. Рано.', 'warn'];
     return ['Накоплено ' + Math.round(m.ratio * 100) + '%. Можно снимать — жми спуск.', 'good'];
   },

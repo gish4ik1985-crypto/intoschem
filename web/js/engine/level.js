@@ -65,7 +65,28 @@ const LevelRegistry = {
   // после возврата на уже пройденный уровень: игрока отправляло туда, где
   // всё давно сделано. Сначала — сосед по кабелю на карте (его как раз
   // открыл свет только что починенного прибора), потом первый непройденный.
+  // Детская дорога (concept.md, раздел 01 «Для кого»): двадцать уровней в
+  // порядке прохождения. «Дальше» ведёт по ней, а на карте следующий её узел
+  // открывается, как только пройден предыдущий (kidsPrev в map.js), — свет
+  // соседа тут не решает: уровни дороги разбросаны по разным секторам.
+  kidsPath: [
+    't_loop', 'flashlight', 't_resist', 'panel', 'garland', 'workbench', 'heater',
+    'fuse_box', 't_power', 't_diode', 'led', 'motor', 'divider', 'v_trim',
+    'g_and', 'g_or', 'flash', 'beacon', 'pump', 'sensor',
+  ],
+  kidsPrev(id) {
+    const i = this.kidsPath.indexOf(id);
+    return i > 0 ? this.kidsPath[i - 1] : null;
+  },
   nextToPlay(id) {
+    const kp = this.kidsPath;
+    if (kp.indexOf(id) >= 0) {
+      const byId = (k) => this.list.find((s) => s.id === k);
+      const i = kp.indexOf(id);
+      const rest = kp.slice(i + 1).concat(kp.slice(0, i));
+      const k = rest.find((x) => byId(x) && !GameConfig.isRepaired(x));
+      if (k) return byId(k);
+    }
     const hasParent = (s, pid) => {
       const f = s.map && s.map.from;
       return Array.isArray(f) ? f.indexOf(pid) >= 0 : f === pid;
@@ -1619,6 +1640,9 @@ function createLevel(spec) {
       // (flash на плате живёт 2,6 с и прячется под этим экраном).
       const unlocks = [];
       if (bestAtMount <= GameConfig.REPAIRED_THRESHOLD) {
+        // Карта при следующем входе покажет, как этот прибор оживает (map.js).
+        // Не сохраняется: после перезагрузки анимация уже не нужна.
+        GameConfig.justRepaired = spec.id;
         for (const d of LevelRegistry.list) {
           const n = d.map && d.map.needs;
           if (n && n.indexOf(spec.id) >= 0 && n.every((id) => GameConfig.isRepaired(id))) {

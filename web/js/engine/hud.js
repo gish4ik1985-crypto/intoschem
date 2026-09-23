@@ -362,6 +362,26 @@ function showPauseOverlay(callbacks) {
 // недоступен, если игрок пропустил его в главном меню и забыл, как
 // крутится ручка или откуда берётся свет на карте. Теперь одна и та же
 // функция открывается и из меню, и из паузы внутри любого уровня.
+// Игра про электричество для детей 10–13 обязана один раз прямо сказать, где
+// кончается игра: здесь всё честно сгорает, а в жизни от розетки сгорают люди.
+// Показывается перед первой сборкой (menu.js) и доступна из меню.
+function showSafetyOverlay(onOk) {
+  const back = el('div', 'overlay', uiLayer());
+  const card = el('div', 'win-card', back);
+  card.style.width = '600px';
+  el('div', 'win-kicker', card).textContent = 'Прежде чем начать';
+  el('div', 'win-title', card).textContent = 'Электричество — не игрушка';
+  const body = el('div', 'win-lesson', card);
+  body.innerHTML = [
+    'Здесь можно ошибаться сколько угодно: деталь сгорит, заменишь её одной кнопкой.',
+    '<b>В жизни так нельзя.</b> Розетка — не батарейка. Её ток убивает.',
+    '<b>Опыты в жизни — только с батарейками</b> и только со взрослыми. Не разбирай приборы, которые включаются в розетку.',
+  ].join('<br><br>');
+  const row = el('div', 'win-buttons', card);
+  row.appendChild(makeButton('Понятно', () => { back.remove(); if (onOk) onOk(); }, 'btn-primary'));
+  return back;
+}
+
 function showHowToOverlay() {
   const back = el('div', 'overlay', uiLayer());
   const card = el('div', 'win-card', back);

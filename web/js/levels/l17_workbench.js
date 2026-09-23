@@ -79,7 +79,7 @@ const Level17 = createLevel(LevelRegistry.register({
             name: 'Резистор', silk: 'R', value: 220, showValue: true,
             rated: { pMax: 1.0, tau: 1.0 },
             interact: {
-              type: 'pick', title: 'Номинал резистора', hint: 'Нажми, чтобы сменить номинал',
+              type: 'pick', title: 'Какой резистор', hint: 'Нажми, чтобы выбрать другой',
               // Не socketOptions()/resistorOptions(): те кладут номинал в
               // opt.content (для гнезда), а у самостоятельной детали
               // значение лежит прямо в part.value.

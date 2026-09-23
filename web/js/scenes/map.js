@@ -53,6 +53,8 @@ const MapScene = (() => {
   let pinch = null;         // жест двумя пальцами (engine/touch.js)
   let glow = {};            // id -> сглаженный радиус света
   let head = null;
+  let revive = null;        // оживание только что починенного прибора
+  let reviveTarget = null;  // куда камера поедет после оживания
   let _lastTipKey = '';     // содержимое Tip перестраиваем только при смене
 
   function devices() { return LevelRegistry.list.filter((s) => s.map); }
@@ -99,6 +101,9 @@ const MapScene = (() => {
     // игрок снял все шесть неучтённых токов. Кабеля к нему нет и быть не
     // может: он и питался тем, что подворовывал с чужих шин.
     if (d.map.needs) return d.map.needs.every((id) => GameConfig.isRepaired(id));
+    // Детская дорога: следующий её узел открыт, как только пройден предыдущий.
+    const kp = LevelRegistry.kidsPrev(d.id);
+    if (kp && GameConfig.isRepaired(kp)) return true;
     // Родителей может быть несколько: к узлу подводят линии с разных сторон,
     // и открыть его достаточно любой из них. Именно это делает карту схемой,
     // а не коридором: до одного и того же узла можно дойти разными путями.
@@ -134,8 +139,32 @@ const MapScene = (() => {
     // Камера открывается не в начале координат, а на том приборе, который
     // сейчас имеет смысл чинить: иначе игрок возвращается с уровня и видит
     // темноту там, где уже всё сделано, и не понимает, куда идти.
+    // Только что починенный прибор оживает на глазах: свет разгорается с
+    // нуля, кольцо, искры, звук. Узлы, которые открылись его светом, звенят,
+    // когда свет до них доходит, а камера потом едет к следующему ремонту.
+    revive = null;
+    const fresh = GameConfig.justRepaired && devices().find((d) => d.id === GameConfig.justRepaired);
+    GameConfig.justRepaired = null;
+    if (fresh && !GameConfig.revealAll) {
+      glow[fresh.id] = 0;
+      const sparks = [];
+      for (let i = 0; i < 26; i++) {
+        const a = Math.random() * Math.PI * 2;
+        sparks.push({ a, v: 180 + Math.random() * 320, len: 10 + Math.random() * 18 });
+      }
+      // Следующий узел детской дороги открыт сразу (isLit), но открыл его
+      // именно этот ремонт — ему тоже положен свой «динь».
+      const seen = new Set(devices().filter((d) => isLit(d) && LevelRegistry.kidsPrev(d.id) !== fresh.id).map((d) => d.id));
+      revive = { d: fresh, t: 0, sparks, seen, pings: [] };
+      playSound(Audio.powerUp);
+    }
+
     const todo = available();
     if (todo.length) camera = vec(todo[0].map.pos.x, todo[0].map.pos.y);
+    if (revive) {
+      reviveTarget = todo.length ? vec(todo[0].map.pos.x, todo[0].map.pos.y) : null;
+      camera = vec(fresh.map.pos.x, fresh.map.pos.y);
+    }
     // В режиме обзора смотреть на «ближайший к ремонту» незачем — туда идут,
     // когда играют. Обзор открывается на середине всей платы и сразу
     // отъезжает так, чтобы она поместилась целиком.
@@ -306,7 +335,26 @@ const MapScene = (() => {
   function update(dt) {
     for (const d of devices()) {
       const target = GameConfig.getDeviceOutput(d.id) * d.map.radius;
-      glow[d.id] = approach(glow[d.id] || 0, target, 2.5, dt);
+      // Оживающий прибор разгорается медленнее обычного — чтобы было видно.
+      const rate = revive && revive.d === d ? 1.1 : 2.5;
+      glow[d.id] = approach(glow[d.id] || 0, target, rate, dt);
+    }
+    if (revive) {
+      revive.t += dt;
+      for (const d of devices()) {
+        if (revive.seen.has(d.id) || !isLit(d)) continue;
+        revive.seen.add(d.id);
+        revive.pings.push({ d, t: 0 });
+        playSound(Audio.chime);
+      }
+      for (const p of revive.pings) p.t += dt;
+      // Игрок тащит карту сам — камеру больше не трогаем.
+      if (dragging) reviveTarget = null;
+      if (revive.t > 2.4 && reviveTarget) {
+        camera.x = approach(camera.x, reviveTarget.x, 2.2, dt);
+        camera.y = approach(camera.y, reviveTarget.y, 2.2, dt);
+      }
+      if (revive.t > 6) revive = null;
     }
     if (hover) {
       const out = GameConfig.getDeviceOutput(hover.id);
@@ -374,8 +422,59 @@ const MapScene = (() => {
       drawModule(ctx, d);
     }
 
+    if (revive) drawRevive(ctx);
+
     ctx.restore();
     Board.vignette(ctx, 1600, 900, 0.72);
+  }
+
+  // Оживание: кольцо света от прибора, искры и «Работает!» над ним; каждому
+  // узлу, до которого дошёл свет, — своё маленькое кольцо.
+  function drawRevive(ctx) {
+    const { d, t } = revive;
+    const p = d.map.pos;
+    const col = d.map.color;
+    ctx.save();
+    // Вспышка в центре в первые полсекунды.
+    glowSpot(ctx, p, 260, col, Math.max(0, 0.55 * (1 - t / 0.8)));
+    for (let k = 0; k < 2; k++) {
+      const tt = t - k * 0.35;
+      if (tt <= 0 || tt > 1.6) continue;
+      ctx.strokeStyle = colorToCss(col, 0.8 * (1 - tt / 1.6));
+      ctx.lineWidth = 6 * (1 - tt / 1.6) + 1;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 90 + tt * 520, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    if (t < 1.4) {
+      ctx.lineCap = 'round';
+      for (const s of revive.sparks) {
+        const r = 70 + s.v * t;
+        const fade = 1 - t / 1.4;
+        ctx.strokeStyle = colorToCss(Pal.WARN, 0.9 * fade);
+        ctx.lineWidth = 3 * fade + 0.5;
+        ctx.beginPath();
+        ctx.moveTo(p.x + Math.cos(s.a) * r, p.y + Math.sin(s.a) * r);
+        ctx.lineTo(p.x + Math.cos(s.a) * (r + s.len), p.y + Math.sin(s.a) * (r + s.len));
+        ctx.stroke();
+      }
+    }
+    if (t < 3.2) {
+      const a = clamp(Math.min(t / 0.3, (3.2 - t) / 0.6), 0, 1);
+      const rise = Math.min(t, 1) * 30;
+      text(ctx, 'Работает!', vec(p.x, p.y - 92 - rise), {
+        size: 30, color: colorToCss(col, a), shadow: true,
+      });
+    }
+    for (const g of revive.pings) {
+      if (g.t > 1.2) continue;
+      ctx.strokeStyle = colorToCss(Pal.WARN, 0.9 * (1 - g.t / 1.2));
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(g.d.map.pos.x, g.d.map.pos.y, 80 + g.t * 140, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.restore();
   }
 
   // Модуль прибора — маленькая плата с той самой деталью, которую в нём

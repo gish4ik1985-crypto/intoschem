@@ -34,14 +34,14 @@ const Level06 = createLevel(LevelRegistry.register({
       id: 'R1', kind: 'socket', pos: vec(-40, -90), name: 'Верхнее плечо',
       silk: 'R1', nets: ['VCC', 'OUT'], comp: 'R1', showValue: true, valueText: socketLabel,
       content: { kind: 'resistor', value: 100 }, rated: { pMax: 1.2, tau: 1.0 },
-      interact: { type: 'pick', title: 'Верхнее плечо делителя', hint: 'Нажми, чтобы сменить номинал', options: () => socketOptions({ jumper: false }) },
+      interact: { type: 'pick', title: 'Верхний резистор', hint: 'Нажми, чтобы выбрать другой', options: () => socketOptions({ jumper: false }) },
     },
     { id: 'OUTN', kind: 'node', pos: vec(60, -90), name: 'Средняя точка', label: '3,6 В?', nets: ['OUT', 'GND'] },
     {
       id: 'R2', kind: 'socket', pos: vec(160, -90), name: 'Нижнее плечо',
       silk: 'R2', nets: ['OUT', 'GND'], comp: 'R2', showValue: true, valueText: socketLabel,
       content: { kind: 'resistor', value: 100 }, rated: { pMax: 1.2, tau: 1.0 },
-      interact: { type: 'pick', title: 'Нижнее плечо делителя', hint: 'Нажми, чтобы сменить номинал', options: () => socketOptions({ jumper: false }) },
+      interact: { type: 'pick', title: 'Нижний резистор', hint: 'Нажми, чтобы выбрать другой', options: () => socketOptions({ jumper: false }) },
     },
     { id: 'LOAD', kind: 'device', pos: vec(106, 30), name: 'Датчик', label: 'датчик', silk: 'A1', nets: ['OUT', 'GND'], comp: 'LOAD' },
   ],
@@ -81,9 +81,9 @@ const Level06 = createLevel(LevelRegistry.register({
   },
 
   status(m, P) {
-    if (!P.R1.content || !P.R2.content) return ['Одно из плеч пустое — делителя нет.', 'neutral'];
-    if (m.uOut > 3.8) return ['Многовато. Верхнее плечо должно забирать больше, чем сейчас.', 'warn'];
-    if (m.uOut < 3.4) return ['Маловато. Нижнее плечо забирает слишком мало.', 'warn'];
+    if (!P.R1.content || !P.R2.content) return ['Одно гнездо пустое — делителя нет.', 'neutral'];
+    if (m.uOut > 3.8) return ['Многовато. Верхний резистор нужен побольше.', 'warn'];
+    if (m.uOut < 3.4) return ['Маловато. Нижний резистор нужен побольше.', 'warn'];
     if (m.iDiv > 0.04) return ['Напряжение верное, но делитель жрёт слишком много тока впустую. Номиналы надо крупнее — при том же отношении.', 'warn'];
     return ['Три с половиной с лишним вольта, и ток разумный. Так и надо.', 'good'];
   },

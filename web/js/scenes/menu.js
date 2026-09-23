@@ -51,8 +51,13 @@ const MenuScene = (() => {
     // объяснения, что с ним делать. Карта появляется, когда есть что смотреть.
     const first = LevelRegistry.list[0];
     box.appendChild(makeButton(done > 0 ? 'Продолжить' : 'Начать',
-      () => SceneManager.goto(done > 0 || !first ? MapScene : first.scene), 'btn-primary'));
+      () => {
+        const go = () => SceneManager.goto(done > 0 || !first ? MapScene : first.scene);
+        // Первый запуск — сперва безопасность, потом первая сборка.
+        if (done > 0) go(); else showSafetyOverlay(go);
+      }, 'btn-primary'));
     box.appendChild(makeButton('Как это работает', () => showHowToOverlay(), 'btn-ghost'));
+    box.appendChild(makeButton('Безопасность', () => showSafetyOverlay(), 'btn-ghost'));
     box.appendChild(makeButton('Кодекс', () => CodexPanel.openOverlay(), 'btn-ghost'));
     box.appendChild(makeButton('Журнал изделия', () => Journal.open(), 'btn-ghost'));
     box.appendChild(makeButton('Выход', () => attemptExit(), 'btn-ghost'));

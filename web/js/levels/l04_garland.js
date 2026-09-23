@@ -152,7 +152,7 @@ const Level04 = createLevel(LevelRegistry.register({
     if (m.litCount === 4) return ['Все четыре целые лампы горят ровно. Перегоревшая гаснет одна и никому не мешает.', 'good'];
     if (m.litCount === 0 && m.inSeries > 0) return ['Гирлянда мертва: в цепочке стоит перегоревшая лампа, и ток не идёт вообще.', 'bad'];
     if (m.inSeries > 0) return ['Часть ламп ещё в цепочке: пока перегоревшая стоит с ними в одном ряду, они не загорятся.', 'warn'];
-    return ['Разбираемся: посмотри, какие лампы на шине, а какие в цепочке.', 'neutral'];
+    return ['Посмотри, какие лампы стоят цепочкой, а какие — каждая на своих проводах.', 'neutral'];
   },
 
   goal(m) {
@@ -188,7 +188,7 @@ function lampSpec(id, x, dead) {
     rated: { pNom: 4.8, pMax: 7.0, tau: 0.9 },
     interact: {
       type: 'cycle', field: 'wiring', values: ['series', 'parallel'],
-      hint: 'Нажми: в цепочку или на общую шину',
+      hint: 'Нажми: в цепочку или на свои провода',
     },
   };
 }
